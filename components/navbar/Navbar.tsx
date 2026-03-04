@@ -23,7 +23,7 @@ export default function Navbar() {
             <Link 
               href={navItem.href}
               className={`
-                block text-xl py-1 rounded-xl transition-all duration-150
+                block text-xl py-1 rounded-xl transition-all duration-200
                 ${
                   pathname === navItem.href 
                     ? "bg-gray-600 shadow-sm font-bold" 
