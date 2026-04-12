@@ -1,41 +1,65 @@
 'use client';
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Box, Stack, Typography, Button } from '@mui/material';
 
 export default function Navbar() {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Home", href: "/" },
-    { name: "Summary", href: "/summary" },
-    { name: "Budget", href: "/budget" },
-    { name: "Investment", href: "/investment" },
+    { name: 'Home', href: '/' },
+    { name: 'Summary', href: '/summary' },
+    { name: 'Budget', href: '/budget' },
+    { name: 'Investment', href: '/investment' },
   ];
 
   return (
-    <nav className="bg-gray-500 h-screen w-48 text-white fixed p-4 text-center">
-      <header className="text-2xl font-bold">
-        <Link href="/">Bettero App</Link>
-      </header>
-      <ul className="mt-4 flex flex-col gap-4">
-        {navItems.map((navItem) => 
-          <li key={navItem.href}>
-            <Link 
-              href={navItem.href}
-              className={`
-                block text-xl py-1 rounded-xl transition-all duration-200
-                ${
-                  pathname === navItem.href 
-                    ? "bg-gray-600 shadow-sm font-bold" 
-                    : "hover:bg-gray-600"
-                }
-              `}
+    <Box
+      sx={{
+        width: 160,
+        height: '100vh',
+        position: 'fixed',
+        bgcolor: 'grey.400',
+        color: 'common.white',
+        p: 2,
+        textAlign: 'center',
+      }}
+    >
+      {/* Header */}
+      <Typography variant="h6" fontWeight="bold">
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          Bettero App
+        </Link>
+      </Typography>
+
+      {/* Navigation */}
+      <Stack spacing={2} mt={2}>
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+
+          return (
+            <Button
+              key={item.href}
+              component={Link}
+              href={item.href}
+              fullWidth
+              sx={{
+                justifyContent: 'center',
+                borderRadius: 2,
+                fontWeight: isActive ? 'bold' : 'normal',
+                bgcolor: isActive ? 'grey.500' : 'transparent',
+                color: 'white',
+                '&:hover': {
+                  bgcolor: 'grey.500',
+                },
+              }}
             >
-              {navItem.name}
-            </Link>
-          </li>
-        )}
-      </ul>
-    </nav>
+              {item.name}
+            </Button>
+          );
+        })}
+      </Stack>
+    </Box>
   );
 }

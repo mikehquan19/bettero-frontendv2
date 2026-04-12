@@ -1,3 +1,3 @@
 export default function Summary() {
-    return <h1>Summary</h1>
+  return <h1>Summary</h1>;
 }

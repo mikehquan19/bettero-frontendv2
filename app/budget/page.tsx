@@ -1,3 +1,3 @@
 export default function Budget() {
-    return <h1>Budget</h1>
+  return <h1>Budget</h1>;
 }
