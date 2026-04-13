@@ -1,3 +1,8 @@
+export type APIResponse<T> = {
+  error: string;
+  data: T | null;
+};
+
 export type FinancialInfo = {
   totalBalance: number;
   totalDue: number;
@@ -19,7 +24,7 @@ export type Account = {
   updated_at: Date;
 };
 
-export type transaction = {
+export type Transaction = {
   id: number;
   account: {
     id: number;
