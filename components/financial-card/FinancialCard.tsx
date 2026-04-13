@@ -52,12 +52,8 @@ export default function FinancialCard(props: FinancialCardProps) {
           }}
         >
           <Box>
-            <Typography variant="h5">
-              {account.institution}
-            </Typography>
-            <Typography>
-              {account.acc_name}
-            </Typography>
+            <Typography variant="h5">{account.institution}</Typography>
+            <Typography>{account.acc_name}</Typography>
           </Box>
           <Box>
             {account.type == 'Credit' && (

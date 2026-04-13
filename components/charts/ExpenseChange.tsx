@@ -13,7 +13,14 @@ import {
 import { Box } from '@mui/material';
 import { categories } from '@/interface';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
 type ExpenseChangeProps = {
   percentages: (number | null)[] | null;

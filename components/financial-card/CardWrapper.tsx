@@ -21,7 +21,7 @@ export default function CardWrapper(props: CardWrapperProps) {
       <Box
         sx={{
           borderRadius: 3,
-          boxShadow: 3,
+          boxShadow: 1,
           bgcolor: '#BFDBFE',
         }}
       >
@@ -41,7 +41,10 @@ export default function CardWrapper(props: CardWrapperProps) {
             List of {type.toLowerCase()} accounts ({numAccounts}):
           </Typography>
           <Tooltip title="See details">
-            <IconButton id="See details" onClick={() => router.push('/accounts')}>
+            <IconButton
+              id="See details"
+              onClick={() => router.push('/accounts')}
+            >
               <ArrowForwardIcon />
             </IconButton>
           </Tooltip>

@@ -1,24 +1,25 @@
-'use client';
 import ExpenseChange from '@/components/charts/ExpenseChange';
 import ExpenseComposition from '@/components/charts/ExpenseComposition';
 import FinancialCard from '@/components/financial-card/FinancialCard';
 import CardWrapper from '@/components/financial-card/CardWrapper';
 import TransactionTable from '@/components/tables/TransactionTable';
 import { sampleAccounts } from '@/data/accounts';
-import { useState, useEffect } from 'react';
 import { Stack, Typography } from '@mui/material';
+import { fetchTransactions } from '@/lib/fetchTransactions';
 
-export default function Home() {
-  const [isClient, setIsClient] = useState(false);
+export default async function Home() {
+  const creditAccounts = sampleAccounts.filter(
+    (account) => account.type == 'Credit',
+  );
+  const debitAccounts = sampleAccounts.filter(
+    (account) => account.type == 'Debit',
+  );
+  const tranData = await fetchTransactions(0, null);
+  if (tranData.error !== '') {
+    return <></>;
+  }
+  const transactions = tranData.data!;
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const creditAccounts = sampleAccounts.filter((account) => account.type == 'Credit');
-  const debitAccounts = sampleAccounts.filter((account) => account.type == 'Debit');
-
-  if (!isClient) return <></>;
   return (
     <>
       <Typography
@@ -35,7 +36,7 @@ export default function Home() {
         sx={{
           bgcolor: '#BFDBFE',
           borderRadius: 3,
-          boxShadow: 3,
+          boxShadow: 1,
           justifyContent: 'space-evenly',
           p: 4,
         }}
@@ -61,7 +62,7 @@ export default function Home() {
           ))}
         </CardWrapper>
       </Stack>
-      <TransactionTable />
+      <TransactionTable transactions={transactions} />
     </>
   );
 }

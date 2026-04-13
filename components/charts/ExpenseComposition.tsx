@@ -1,3 +1,5 @@
+'use client';
+
 import { categories } from '@/interface';
 import { Box } from '@mui/material';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';

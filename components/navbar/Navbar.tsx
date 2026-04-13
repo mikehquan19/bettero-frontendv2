@@ -26,14 +26,11 @@ export default function Navbar() {
         textAlign: 'center',
       }}
     >
-      {/* Header */}
       <Typography variant="h6" fontWeight="bold">
         <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
           Bettero App
         </Link>
       </Typography>
-
-      {/* Navigation */}
       <Stack spacing={2} mt={2}>
         {navItems.map((item) => {
           const isActive = pathname === item.href;

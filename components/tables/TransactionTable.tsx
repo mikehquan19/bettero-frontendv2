@@ -1,5 +1,4 @@
 'use client';
-
 import {
   Table,
   TableBody,
@@ -24,7 +23,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useState } from 'react';
-import { sampleTransactions } from '@/data/transactions';
+import { Transaction } from '@/interface';
 
 type TransactionMenuProps = {
   id: string;
@@ -36,7 +35,6 @@ type TransactionMenuProps = {
 
 function TransactionMenu(props: TransactionMenuProps) {
   const { id, controlButton, anchorEl, open, onClose } = props;
-
   return (
     <Menu
       id={id}
@@ -65,11 +63,14 @@ function TransactionMenu(props: TransactionMenuProps) {
   );
 }
 
-export default function TransactionTable() {
+type TransactionTableProps = {
+  transactions: Transaction[];
+};
+
+export default function TransactionTable(props: TransactionTableProps) {
   const [page, setPage] = useState(1);
   const [anchorEl, setAnchorEl] = useState(null);
-  const rowsPerPage = 10;
-
+  const transactions = props.transactions;
   return (
     <>
       <Paper
@@ -88,7 +89,7 @@ export default function TransactionTable() {
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            List of transactions ({sampleTransactions.length}):
+            List of transactions ({transactions.length}):
           </Typography>
         </Box>
         <TableContainer>
@@ -102,21 +103,28 @@ export default function TransactionTable() {
           >
             <TableHead>
               <TableRow>
-                {['Account', 'Merchant', 'Description', 'Category', 'Amount', 'Created At', ''].map(
-                  (attr, index) => (
-                    <TableCell key={index}>
-                      <Typography fontWeight={550}>{attr}</Typography>
-                    </TableCell>
-                  ),
-                )}
+                {[
+                  'Account',
+                  'Merchant',
+                  'Description',
+                  'Category',
+                  'Amount',
+                  'Created At',
+                  '',
+                ].map((attr) => (
+                  <TableCell key={attr}>
+                    <Typography fontWeight={550}>{attr}</Typography>
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {sampleTransactions.map((transaction, index) => (
-                <TableRow key={index} hover>
+              {transactions.map((transaction) => (
+                <TableRow key={transaction.id} hover>
                   <TableCell>
                     <Typography>
-                      {transaction.account.institution}'s {transaction.account.acc_name}
+                      {transaction.account.institution}'s{' '}
+                      {transaction.account.acc_name}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -132,13 +140,21 @@ export default function TransactionTable() {
                     <Typography>${transaction.amount}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography>{transaction.created_at.toISOString().split('T')[0]}</Typography>
+                    <Typography>
+                      {
+                        new Date(transaction.created_at)
+                          .toISOString()
+                          .split('T')[0]
+                      }
+                    </Typography>
                   </TableCell>
                   <TableCell>
                     <Tooltip title="See actions on transaction">
                       <IconButton
                         id="see-actions"
-                        aria-controls={anchorEl ? 'transaction-actions' : undefined}
+                        aria-controls={
+                          anchorEl ? 'transaction-actions' : undefined
+                        }
                         aria-haspopup="true"
                         aria-expanded={anchorEl ? 'true' : undefined}
                         onClick={(event: any) => {
@@ -167,8 +183,8 @@ export default function TransactionTable() {
           count={100}
           page={page}
           onPageChange={() => null}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={() => null}
+          rowsPerPage={20}
+          rowsPerPageOptions={[]}
         />
       </Paper>
       <Stack direction="row" justifyContent="center" mt={1}>
