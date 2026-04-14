@@ -1,22 +1,34 @@
-import { APIResponse, Transaction } from '@/interface';
+import { APIResponse, PaginatedData, Transaction } from '@/interface';
+import { BASE_URL } from './fetchAccounts';
 
 export async function fetchTransactions(
   offset: number,
-  accountId: number | null,
-): Promise<APIResponse<Transaction[]>> {
+  accountId: number | undefined,
+): Promise<APIResponse<PaginatedData<Transaction[]>>> {
   try {
-    let url = 'http://localhost:8080/';
-    if (accountId !== null) {
-      url += `accounts/${accountId}/`;
+    let url = BASE_URL;
+    if (typeof accountId !== 'undefined') {
+      url += `/accounts/${accountId}`;
     }
-    url += `transactions?offset=${offset}`;
+    url += `/transactions?offset=${offset}`;
 
     const res = await fetch(url, {
-      next: { revalidate: 300 },
+      method: 'GET',
+      next: { revalidate: 60 },
     });
 
-    const transactionData = await res.json();
-    return { error: transactionData.error, data: transactionData.data };
+    const resData = await res.json();
+    if (resData.error !== '') {
+      return { error: resData.error, data: null };
+    }
+
+    // Default data
+    const paginatedData: PaginatedData<Transaction[]> = {
+      total: resData.data.total ?? 0,
+      offset: resData.data.offset ?? 0,
+      data: resData.data.data ?? [],
+    };
+    return { error: resData.error, data: paginatedData };
   } catch (error) {
     return {
       error:

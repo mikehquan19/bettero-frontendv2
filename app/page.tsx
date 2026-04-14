@@ -3,22 +3,33 @@ import ExpenseComposition from '@/components/charts/ExpenseComposition';
 import FinancialCard from '@/components/financial-card/FinancialCard';
 import CardWrapper from '@/components/financial-card/CardWrapper';
 import TransactionTable from '@/components/tables/TransactionTable';
-import { sampleAccounts } from '@/data/accounts';
 import { Stack, Typography } from '@mui/material';
 import { fetchTransactions } from '@/lib/fetchTransactions';
+import { fetchAccounts } from '@/lib/fetchAccounts';
 
-export default async function Home() {
-  const creditAccounts = sampleAccounts.filter(
-    (account) => account.type == 'Credit',
-  );
-  const debitAccounts = sampleAccounts.filter(
-    (account) => account.type == 'Debit',
-  );
-  const tranData = await fetchTransactions(0, null);
-  if (tranData.error !== '') {
-    return <></>;
+export default async function Home(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const searchParams = await props.searchParams;
+  const offset = Number(searchParams.offset ?? '0');
+  const accountId = searchParams.accountId
+    ? Number(searchParams.accountId)
+    : undefined;
+
+  const [accountsData, transactionsData] = await Promise.all([
+    fetchAccounts(),
+    fetchTransactions(offset, accountId),
+  ]);
+  if (transactionsData.error !== '' || accountsData.error !== '') {
+    console.log(accountsData.error);
+    return <div></div>;
   }
-  const transactions = tranData.data!;
+
+  const accounts = accountsData.data!;
+  const paginatedTrans = transactionsData.data!;
+
+  const creditAccounts = accounts.filter((account) => account.type == 'Credit');
+  const debitAccounts = accounts.filter((account) => account.type == 'Debit');
 
   return (
     <>
@@ -44,12 +55,7 @@ export default async function Home() {
         <ExpenseChange percentages={null} />
         <ExpenseComposition percentages={null} />
       </Stack>
-      <Stack
-        sx={{
-          mt: 2,
-          mb: 2,
-        }}
-      >
+      <Stack sx={{ mt: 2, mb: 2 }} spacing={1}>
         <CardWrapper type="Debit" numAccounts={debitAccounts.length}>
           {debitAccounts.map((account) => (
             <FinancialCard key={account.id} account={account} />
@@ -62,7 +68,7 @@ export default async function Home() {
           ))}
         </CardWrapper>
       </Stack>
-      <TransactionTable transactions={transactions} />
+      <TransactionTable paginatedTrans={paginatedTrans} />
     </>
   );
 }

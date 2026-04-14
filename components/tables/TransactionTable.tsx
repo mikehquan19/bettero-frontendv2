@@ -1,4 +1,5 @@
 'use client';
+
 import {
   Table,
   TableBody,
@@ -23,7 +24,8 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useState } from 'react';
-import { Transaction } from '@/interface';
+import { PaginatedData, Transaction } from '@/interface';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 type TransactionMenuProps = {
   id: string;
@@ -64,13 +66,28 @@ function TransactionMenu(props: TransactionMenuProps) {
 }
 
 type TransactionTableProps = {
-  transactions: Transaction[];
+  paginatedTrans: PaginatedData<Transaction[]>;
 };
 
 export default function TransactionTable(props: TransactionTableProps) {
-  const [page, setPage] = useState(1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [anchorEl, setAnchorEl] = useState(null);
-  const transactions = props.transactions;
+
+  const paginatedTrans = props.paginatedTrans;
+  const limit = 20;
+  const currPage = Math.floor(paginatedTrans.offset / limit);
+
+  function handlePageChange(
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    page: number,
+  ) {
+    const newOffset = page * limit;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('offset', newOffset.toString());
+    router.push(`?${params.toString()}`, { scroll: false });
+  }
+
   return (
     <>
       <Paper
@@ -89,7 +106,7 @@ export default function TransactionTable(props: TransactionTableProps) {
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            List of transactions ({transactions.length}):
+            List of transactions ({paginatedTrans.total}):
           </Typography>
         </Box>
         <TableContainer>
@@ -119,7 +136,7 @@ export default function TransactionTable(props: TransactionTableProps) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {transactions.map((transaction) => (
+              {paginatedTrans.data.map((transaction) => (
                 <TableRow key={transaction.id} hover>
                   <TableCell>
                     <Typography>
@@ -180,10 +197,10 @@ export default function TransactionTable(props: TransactionTableProps) {
         {/* Table pagination */}
         <TablePagination
           component="div"
-          count={100}
-          page={page}
-          onPageChange={() => null}
-          rowsPerPage={20}
+          count={paginatedTrans.total}
+          page={currPage}
+          onPageChange={handlePageChange}
+          rowsPerPage={limit}
           rowsPerPageOptions={[]}
         />
       </Paper>

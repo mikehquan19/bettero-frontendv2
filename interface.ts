@@ -3,6 +3,12 @@ export type APIResponse<T> = {
   data: T | null;
 };
 
+export type PaginatedData<T> = {
+  total: number;
+  offset: number;
+  data: T;
+};
+
 export type FinancialInfo = {
   totalBalance: number;
   totalDue: number;

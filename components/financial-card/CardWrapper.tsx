@@ -49,7 +49,6 @@ export default function CardWrapper(props: CardWrapperProps) {
             </IconButton>
           </Tooltip>
         </Stack>
-        {/* Main wrapper */}
         {numAccounts != 0 ? (
           <Stack direction="row" spacing={1} sx={{ p: 1, overflowX: 'auto' }}>
             {children}

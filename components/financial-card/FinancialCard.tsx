@@ -10,19 +10,40 @@ type FinancialCardProps = {
 type CardTheme = {
   background: string;
   primary: string;
-  secondary: string;
 };
 
-const institutionToTheme: Record<string, CardTheme> = {
+const bankToTheme: Record<string, CardTheme> = {
   'Bank of America': {
     background: 'grey.400',
     primary: 'common.white',
-    secondary: 'grey.200',
   },
   'JP Morgan Chase': {
-    background: 'blue',
+    background: '#1A237E',
     primary: 'common.white',
-    secondary: 'blue.200',
+  },
+  'Wells Fargo': {
+    background: '#D71E28',
+    primary: 'common.white',
+  },
+  'Citi Bank': {
+    background: '#003B70',
+    primary: 'common.white',
+  },
+  'Capital One': {
+    background: '#004879',
+    primary: 'common.white',
+  },
+  Discover: {
+    background: '#E55C20',
+    primary: 'common.white',
+  },
+  'Sofi Bank': {
+    background: '#00A3E0',
+    primary: 'common.white',
+  },
+  'Ally Bank': {
+    background: '#5F259F',
+    primary: 'common.white',
   },
 };
 
@@ -40,8 +61,8 @@ export default function FinancialCard(props: FinancialCardProps) {
         borderRadius: 3,
         minWidth: 340,
         minHeight: 220,
-        bgcolor: institutionToTheme[account.institution].background,
-        color: institutionToTheme[account.institution].primary,
+        bgcolor: bankToTheme[account.institution].background,
+        color: bankToTheme[account.institution].primary,
       }}
     >
       <CardContent sx={{ height: '100%' }}>
@@ -67,7 +88,7 @@ export default function FinancialCard(props: FinancialCardProps) {
                 <Box>
                   <Typography sx={{ fontSize: 14 }}>Next due:</Typography>
                   <Typography>
-                    {account.next_due!.toISOString().split('T')[0]}
+                    {new Date(account.next_due!).toISOString().split('T')[0]}
                   </Typography>
                 </Box>
                 <Box>

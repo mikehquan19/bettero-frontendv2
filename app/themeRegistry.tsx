@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { useState } from 'react';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { useServerInsertedHTML } from 'next/navigation';
@@ -10,14 +10,14 @@ export default function ThemeRegistry({
 }: {
   children: React.ReactNode;
 }) {
-  const [{ cache, flush }] = React.useState(() => {
-    const cache = createCache({ key: 'mui' });
-
+  const [{ cache, flush }] = useState(() => {
+    const cache = createCache({ key: 'mui', prepend: true });
     cache.compat = true;
 
     let inserted: string[] = [];
 
     const prevInsert = cache.insert;
+
     cache.insert = (...args: any) => {
       const serialized = args[1];
       if (cache.inserted[serialized.name] === undefined) {
@@ -27,22 +27,23 @@ export default function ThemeRegistry({
     };
 
     const flush = () => {
-      const out = inserted;
+      const styles = inserted.map((name) => cache.inserted[name]).join('');
+
       inserted = [];
-      return out;
+      return styles;
     };
 
     return { cache, flush };
   });
 
   useServerInsertedHTML(() => {
-    const names = flush();
-    if (!names.length) return null;
+    const css = flush();
+    if (!css) return null;
 
     return (
       <style
         dangerouslySetInnerHTML={{
-          __html: cache.inserted,
+          __html: css,
         }}
       />
     );
