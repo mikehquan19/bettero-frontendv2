@@ -3,11 +3,11 @@ import { BASE_URL } from './fetchAccounts';
 
 export async function fetchTransactions(
   offset: number,
-  accountId: number | undefined,
+  accountId: number,
 ): Promise<APIResponse<PaginatedData<Transaction[]>>> {
   try {
     let url = BASE_URL;
-    if (typeof accountId !== 'undefined') {
+    if (accountId != -1) {
       url += `/accounts/${accountId}`;
     }
     url += `/transactions?offset=${offset}`;
@@ -22,7 +22,7 @@ export async function fetchTransactions(
       return { error: resData.error, data: null };
     }
 
-    // Default data
+    // Default paginated data
     const paginatedData: PaginatedData<Transaction[]> = {
       total: resData.data.total ?? 0,
       offset: resData.data.offset ?? 0,

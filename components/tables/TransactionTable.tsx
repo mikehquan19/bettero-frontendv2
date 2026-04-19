@@ -144,7 +144,7 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
   );
 }
 
-function PaginationFooter(props: {
+type PaginationFooterProps = {
   totalCount: number;
   page: number;
   onPageChange: (
@@ -152,20 +152,24 @@ function PaginationFooter(props: {
     page: number,
   ) => void;
   countPerPage: number;
-}) {
+};
+
+function PaginationFooter(props: PaginationFooterProps) {
   return (
     <TableFooter>
-      <TableCell colSpan={7} className="p-1">
-        {/* Table pagination */}
-        <TablePagination
-          component="div"
-          count={props.totalCount}
-          page={props.page}
-          onPageChange={props.onPageChange}
-          rowsPerPage={props.countPerPage}
-          rowsPerPageOptions={[]}
-        />
-      </TableCell>
+      <TableRow>
+        <TableCell colSpan={7} className="p-1">
+          {/* Table pagination */}
+          <TablePagination
+            component="div"
+            count={props.totalCount}
+            page={props.page}
+            onPageChange={props.onPageChange}
+            rowsPerPage={props.countPerPage}
+            rowsPerPageOptions={[]}
+          />
+        </TableCell>
+      </TableRow>
     </TableFooter>
   );
 }
@@ -189,7 +193,7 @@ export default function TransactionTable(props: {
     const newOffset = page * limit;
     const params = new URLSearchParams(searchParams.toString());
     params.set('offset', newOffset.toString());
-    router.push(`?${params.toString()}`, { scroll: false });
+    router.replace(`?${params.toString()}`, { scroll: false });
   }
 
   return (

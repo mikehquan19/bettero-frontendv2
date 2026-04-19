@@ -1,12 +1,11 @@
+@layer theme, base, mui, components, utilities;
 @import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
+  --background: #e5e7eb;
   --foreground: #171717;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {
