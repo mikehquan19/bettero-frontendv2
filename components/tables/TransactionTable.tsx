@@ -18,6 +18,7 @@ import {
   Paper,
   Menu,
   MenuItem,
+  TableFooter,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -27,6 +28,28 @@ import { useState } from 'react';
 import { PaginatedData, Transaction } from '@/interface';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+function TransactionTableHead() {
+  return (
+    <TableHead>
+      <TableRow>
+        {[
+          'Account',
+          'Merchant',
+          'Description',
+          'Category',
+          'Amount',
+          'Created At',
+          '',
+        ].map((tranAttr) => (
+          <TableCell key={tranAttr}>
+            <Typography className="font-bold">{tranAttr}</Typography>
+          </TableCell>
+        ))}
+      </TableRow>
+    </TableHead>
+  );
+}
+
 type TransactionMenuProps = {
   id: string;
   controlButton: string;
@@ -35,27 +58,27 @@ type TransactionMenuProps = {
   onClose: () => void;
 };
 
+/** Menu to take actions on the transaction */
 function TransactionMenu(props: TransactionMenuProps) {
-  const { id, controlButton, anchorEl, open, onClose } = props;
   return (
     <Menu
-      id={id}
-      anchorEl={anchorEl}
-      open={open}
-      onClose={onClose}
+      id={props.id}
+      anchorEl={props.anchorEl}
+      open={props.open}
+      onClose={props.onClose}
       slotProps={{
         list: {
-          'aria-labelledby': controlButton,
+          'aria-labelledby': props.controlButton,
         },
       }}
     >
-      <MenuItem onClick={onClose}>
+      <MenuItem onClick={props.onClose}>
         <ListItemIcon>
           <ModeEditIcon />
         </ListItemIcon>
         <ListItemText>Update</ListItemText>
       </MenuItem>
-      <MenuItem onClick={onClose}>
+      <MenuItem onClick={props.onClose}>
         <ListItemIcon>
           <DeleteForeverIcon />
         </ListItemIcon>
@@ -65,19 +88,100 @@ function TransactionMenu(props: TransactionMenuProps) {
   );
 }
 
-type TransactionTableProps = {
-  paginatedTrans: PaginatedData<Transaction[]>;
-};
+function TransactionTableBody(props: { transactions: Transaction[] }) {
+  const [anchorEl, setAnchorEl] = useState(null);
+  return (
+    <TableBody>
+      {props.transactions.map((transaction) => (
+        <TableRow key={transaction.id} hover>
+          <TableCell>
+            <Typography>
+              {transaction.account.institution}'s {transaction.account.acc_name}
+            </Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>{transaction.merchant}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>{transaction.tran_description}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>{transaction.category}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>${transaction.amount}</Typography>
+          </TableCell>
+          <TableCell>
+            <Typography>
+              {new Date(transaction.created_at).toISOString().split('T')[0]}
+            </Typography>
+          </TableCell>
+          <TableCell>
+            <Tooltip title="See actions on transaction">
+              <IconButton
+                id="see-actions"
+                aria-controls={anchorEl ? 'transaction-actions' : undefined}
+                aria-haspopup="true"
+                aria-expanded={anchorEl ? 'true' : undefined}
+                onClick={(event: any) => {
+                  setAnchorEl(event.currentTarget);
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+            </Tooltip>
+          </TableCell>
+        </TableRow>
+      ))}
+      <TransactionMenu
+        id="transaction-actions"
+        controlButton="see-actions"
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      />
+    </TableBody>
+  );
+}
 
-export default function TransactionTable(props: TransactionTableProps) {
+function PaginationFooter(props: {
+  totalCount: number;
+  page: number;
+  onPageChange: (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    page: number,
+  ) => void;
+  countPerPage: number;
+}) {
+  return (
+    <TableFooter>
+      <TableCell colSpan={7} className="p-1">
+        {/* Table pagination */}
+        <TablePagination
+          component="div"
+          count={props.totalCount}
+          page={props.page}
+          onPageChange={props.onPageChange}
+          rowsPerPage={props.countPerPage}
+          rowsPerPageOptions={[]}
+        />
+      </TableCell>
+    </TableFooter>
+  );
+}
+
+export default function TransactionTable(props: {
+  paginatedTrans: PaginatedData<Transaction[]>;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [anchorEl, setAnchorEl] = useState(null);
 
-  const paginatedTrans = props.paginatedTrans;
   const limit = 20;
-  const currPage = Math.floor(paginatedTrans.offset / limit);
+  const currentPage = Math.floor(props.paginatedTrans.offset / limit);
 
+  /**
+   * Depending the current page, move to new page (in params)
+   */
   function handlePageChange(
     event: React.MouseEvent<HTMLButtonElement> | null,
     page: number,
@@ -90,23 +194,10 @@ export default function TransactionTable(props: TransactionTableProps) {
 
   return (
     <>
-      <Paper
-        sx={{
-          backgroundColor: '#BFDBFE',
-          borderRadius: '0.75rem',
-        }}
-      >
-        <Box
-          sx={{
-            bgcolor: 'grey.400',
-            color: 'white',
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            p: 2,
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            List of transactions ({paginatedTrans.total}):
+      <Paper className="bg-blue-200 rounded-xl">
+        <Box className="bg-gray-400 text-white rounded-t-xl p-3">
+          <Typography variant="h6" className="font-bold">
+            List of transactions ({props.paginatedTrans.total}):
           </Typography>
         </Box>
         <TableContainer>
@@ -118,93 +209,18 @@ export default function TransactionTable(props: TransactionTableProps) {
               },
             }}
           >
-            <TableHead>
-              <TableRow>
-                {[
-                  'Account',
-                  'Merchant',
-                  'Description',
-                  'Category',
-                  'Amount',
-                  'Created At',
-                  '',
-                ].map((attr) => (
-                  <TableCell key={attr}>
-                    <Typography fontWeight={550}>{attr}</Typography>
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedTrans.data.map((transaction) => (
-                <TableRow key={transaction.id} hover>
-                  <TableCell>
-                    <Typography>
-                      {transaction.account.institution}'s{' '}
-                      {transaction.account.acc_name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>{transaction.merchant}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>{transaction.tran_description}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>{transaction.category}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>${transaction.amount}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>
-                      {
-                        new Date(transaction.created_at)
-                          .toISOString()
-                          .split('T')[0]
-                      }
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Tooltip title="See actions on transaction">
-                      <IconButton
-                        id="see-actions"
-                        aria-controls={
-                          anchorEl ? 'transaction-actions' : undefined
-                        }
-                        aria-haspopup="true"
-                        aria-expanded={anchorEl ? 'true' : undefined}
-                        onClick={(event: any) => {
-                          setAnchorEl(event.currentTarget);
-                        }}
-                      >
-                        <MenuIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-              <TransactionMenu
-                id="transaction-actions"
-                controlButton="see-actions"
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={() => setAnchorEl(null)}
-              />
-            </TableBody>
+            <TransactionTableHead />
+            <TransactionTableBody transactions={props.paginatedTrans.data} />
+            <PaginationFooter
+              totalCount={props.paginatedTrans.total}
+              page={currentPage}
+              onPageChange={handlePageChange}
+              countPerPage={limit}
+            />
           </Table>
         </TableContainer>
-        {/* Table pagination */}
-        <TablePagination
-          component="div"
-          count={paginatedTrans.total}
-          page={currPage}
-          onPageChange={handlePageChange}
-          rowsPerPage={limit}
-          rowsPerPageOptions={[]}
-        />
       </Paper>
-      <Stack direction="row" justifyContent="center" mt={1}>
+      <Stack direction="row" className="justify-center mt-2">
         <Tooltip title="Add transaction">
           <IconButton id="add-transaction">
             <AddCircleIcon fontSize="large" />
