@@ -6,13 +6,13 @@ export async function fetchTransactions(
   accountId: number,
 ): Promise<APIResponse<PaginatedData<Transaction[]>>> {
   try {
-    let url = BASE_URL;
+    let transactionsUrl = BASE_URL;
     if (accountId != -1) {
-      url += `/accounts/${accountId}`;
+      transactionsUrl += `/accounts/${accountId}`;
     }
-    url += `/transactions?offset=${offset}`;
+    transactionsUrl += `/transactions?offset=${offset}`;
 
-    const res = await fetch(url, {
+    const res = await fetch(transactionsUrl, {
       method: 'GET',
       next: { revalidate: 60 },
     });

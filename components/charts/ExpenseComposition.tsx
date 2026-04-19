@@ -59,12 +59,7 @@ export default function ExpenseComposition(props: ExpenseCompositionProps) {
   };
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: 420,
-      }}
-    >
+    <Box className="w-full h-[420]">
       <Pie options={options} data={data} />
     </Box>
   );

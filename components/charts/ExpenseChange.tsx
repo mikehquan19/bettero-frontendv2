@@ -79,12 +79,7 @@ export default function ExpenseChange(props: ExpenseChangeProps) {
   };
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height: 420,
-      }}
-    >
+    <Box className="w-full h-[420]">
       <Bar options={options} data={data} />
     </Box>
   );

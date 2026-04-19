@@ -70,6 +70,9 @@ function TransactionMenu(props: TransactionMenuProps) {
         list: {
           'aria-labelledby': props.controlButton,
         },
+        paper: {
+          className: 'bg-blue-100',
+        },
       }}
     >
       <MenuItem onClick={props.onClose}>
@@ -183,9 +186,7 @@ export default function TransactionTable(props: {
   const limit = 20;
   const currentPage = Math.floor(props.paginatedTrans.offset / limit);
 
-  /**
-   * Depending the current page, move to new page (in params)
-   */
+  /** Depending the current page, move to new page */
   function handlePageChange(
     event: React.MouseEvent<HTMLButtonElement> | null,
     page: number,
@@ -209,7 +210,7 @@ export default function TransactionTable(props: {
             sx={{
               minWidth: 1000,
               '& .MuiTableRow-root': {
-                borderBottom: '0.1rem solid rgba(0,0,0,0.12)',
+                borderTop: '0.1rem solid rgba(0,0,0,0.12)',
               },
             }}
           >

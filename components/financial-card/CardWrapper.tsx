@@ -18,26 +18,12 @@ export default function CardWrapper(props: CardWrapperProps) {
 
   return (
     <>
-      <Box
-        sx={{
-          borderRadius: 3,
-          boxShadow: 1,
-          bgcolor: '#BFDBFE',
-        }}
-      >
+      <Box className="rounded-xl shadow-lg bg-blue-200">
         <Stack
           direction="row"
-          sx={{
-            bgcolor: 'grey.400',
-            color: 'white',
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            p: 1,
-          }}
+          className="bg-gray-400 text-white rounded-t-xl justify-between items-center p-2"
         >
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+          <Typography variant="h6" className="font-bold">
             List of {type.toLowerCase()} accounts ({numAccounts}):
           </Typography>
           <Tooltip title="See details">
@@ -50,29 +36,20 @@ export default function CardWrapper(props: CardWrapperProps) {
           </Tooltip>
         </Stack>
         {numAccounts != 0 ? (
-          <Stack direction="row" spacing={1} sx={{ p: 1, overflowX: 'auto' }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            className="py-3 px-2 overflow-x-auto"
+          >
             {children}
           </Stack>
         ) : (
-          <Typography
-            variant="h6"
-            sx={{
-              textAlign: 'center',
-              p: 1,
-              fontWeight: 'bold',
-            }}
-          >
+          <Typography variant="h6" className="text-center font-bold p-2">
             There are not {type.toLowerCase()} accounts
           </Typography>
         )}
       </Box>
-      <Stack
-        direction="row"
-        sx={{
-          justifyContent: 'center',
-          mt: 1,
-        }}
-      >
+      <Stack direction="row" className="justify-center mt-1">
         <Tooltip title={`Add ${type.toLowerCase()} card`}>
           <IconButton>
             <AddCircleIcon fontSize="large" />
