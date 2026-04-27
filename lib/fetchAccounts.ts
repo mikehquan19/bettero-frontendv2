@@ -1,24 +1,31 @@
-import { APIResponse, Account } from '@/interface';
+'use server';
 
-export const BASE_URL = 'http://localhost:8080';
+import { Account, BASE_URL } from '@/interface';
 
-export async function fetchAccounts(): Promise<APIResponse<Account[]>> {
+/**
+ * Server-fetching the list of accounts of the user.
+ * Cache the result for an hour, except being revalidated
+ */
+export async function fetchAccounts(): Promise<Account[]> {
   try {
     const res = await fetch(`${BASE_URL}/accounts`, {
       method: 'GET',
-      next: { revalidate: 3600 },
+      next: {
+        revalidate: 60 * 5,
+        tags: ['fetch-accounts'],
+      },
     });
 
     const resData = await res.json();
     if (resData.error !== '') {
-      return { error: resData.error, data: null };
+      throw new Error(resData.error);
     }
-    return { error: resData.error, data: resData.data ?? [] };
+    return resData.data ?? [];
   } catch (error) {
-    return {
-      error:
-        error instanceof Error ? error.message : 'An unknown error occurred',
-      data: null,
-    };
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error('An unknown error occurred');
+    }
   }
 }

@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Box } from '@mui/material';
-import { categories } from '@/interface';
+import { CategoryInfo } from '@/interface';
 
 ChartJS.register(
   CategoryScale,
@@ -22,11 +22,7 @@ ChartJS.register(
   Legend,
 );
 
-type ExpenseChangeProps = {
-  percentages: (number | null)[] | null;
-};
-
-export default function ExpenseChange(props: ExpenseChangeProps) {
+export default function ExpenseChange(props: { percentages: CategoryInfo }) {
   const options = {
     indexAxis: 'y' as const,
     elements: {
@@ -51,17 +47,18 @@ export default function ExpenseChange(props: ExpenseChangeProps) {
     },
   };
 
-  const labels = categories.map((c) => c);
-  const percentages =
-    props.percentages && props.percentages.length == labels.length
-      ? props.percentages
-      : [-20, 30, -10, -15, null, 25, 0, 10, 5];
+  const labels: string[] = [];
+  const percentages: (number | null)[] = [];
+  Object.entries(props.percentages).forEach(([key, value]) => {
+    labels.push(key);
+    percentages.push(value);
+  });
   const colors = percentages.map((percentage) => {
     if (percentage) {
       if (percentage > 0) {
         return 'rgb(255, 99, 132)';
       } else {
-        return 'rgb(99, 132, 255)';
+        return 'rgb(52, 61, 95)';
       }
     }
   });

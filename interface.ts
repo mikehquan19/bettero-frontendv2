@@ -1,19 +1,33 @@
-export type APIResponse<T> = {
-  error: string;
-  data: T | null;
-};
-
 export type PaginatedData<T> = {
   total: number;
   offset: number;
   data: T;
 };
 
-export type FinancialInfo = {
-  totalBalance: number;
-  totalDue: number;
-  totalIncome: number;
-  totalExpense: number;
+export type BasicInfo = {
+  total_balance: number;
+  total_amount_due: number;
+  total_income: number;
+  total_expense: number;
+};
+
+export type CategoryInfo = {
+  Automobile: number | null;
+  Dining: number | null;
+  Gas: number | null;
+  Grocery: number | null;
+  Housing: number | null;
+  Medical: number | null;
+  Others: number | null;
+  Shopping: number | null;
+  Subscription: number | null;
+};
+
+export type AnalysisInfo = {
+  basic: BasicInfo;
+  daily: Record<string, number>;
+  change: CategoryInfo;
+  composition: CategoryInfo;
 };
 
 export type Account = {
@@ -119,13 +133,36 @@ export type CategoryProgress = {
 };
 
 export const categories = [
-  'Gas',
-  'Dining',
-  'Grocery',
+  'Income',
   'Housing',
-  'Medical',
-  'Shopping',
   'Automobile',
+  'Medical',
   'Subscription',
+  'Grocery',
+  'Dining',
+  'Shopping',
+  'Gas',
   'Others',
 ];
+
+export const PageLimit = 15;
+
+export const AutocompleteOptions = [
+  'Uber txn #8643',
+  'Starbucks txn #1657',
+  'Costco txn #928',
+  'Starbucks txn #6501',
+  'Target txn #4589',
+  'Uber txn #5252',
+  'Amazon txn #8771',
+  'Shell txn #7811',
+  'Walmart txn #9745',
+  'Uber txn #8173',
+  'McDonalds txn #2897',
+  'Costco txn #2684',
+  'Netflix txn #2058',
+  'Starbucks txn #2649',
+  'Netflix txn #3994',
+];
+
+export const BASE_URL = 'http://localhost:8080';

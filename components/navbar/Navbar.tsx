@@ -9,48 +9,32 @@ export default function Navbar() {
 
   const navItems = [
     { name: 'Home', href: '/' },
+    { name: 'Accounts', href: '/accounts' },
     { name: 'Summary', href: '/summary' },
     { name: 'Budget', href: '/budget' },
-    { name: 'Investment', href: '/investment' },
   ];
 
   return (
-    <Box
-      sx={{
-        width: 160,
-        height: '100vh',
-        position: 'fixed',
-        bgcolor: 'grey.400',
-        color: 'common.white',
-        p: 2,
-        textAlign: 'center',
-      }}
-    >
+    <Box className="w-[160] h-[100vh] fixed bg-gray-400 text-white p-2 text-center">
       <Typography variant="h6" fontWeight="bold">
-        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link href="/" className="no-underline text-inherit">
           Bettero App
         </Link>
       </Typography>
-      <Stack spacing={2} mt={2}>
+      <Stack spacing={2} className="mt-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
-
           return (
             <Button
               key={item.href}
               component={Link}
               href={item.href}
               fullWidth
-              sx={{
-                justifyContent: 'center',
-                borderRadius: 2,
-                fontWeight: isActive ? 'bold' : 'normal',
-                bgcolor: isActive ? 'grey.500' : 'transparent',
-                color: 'white',
-                '&:hover': {
-                  bgcolor: 'grey.500',
-                },
-              }}
+              className={`justify-center rounded-lg font-${
+                isActive ? 'bold' : 'normal'
+              } bg-${
+                isActive ? 'gray-500' : 'transparent'
+              } text-white hover:bg-gray-500`}
             >
               {item.name}
             </Button>
