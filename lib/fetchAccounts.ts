@@ -22,10 +22,6 @@ export async function fetchAccounts(): Promise<Account[]> {
     }
     return resData.data ?? [];
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error('An unknown error occurred');
-    }
+    throw error;
   }
 }

@@ -15,7 +15,7 @@ import {
   deleteTransaction,
   updateTransaction,
 } from '@/lib/fetchTransactions';
-import { useBanner } from '../snackbar/BannerProvider';
+import { BannerState, useBanner } from '../snackbar/BannerProvider';
 
 type TransactionActionContextProps = {
   allowActions: boolean;
@@ -101,38 +101,56 @@ export default function TransactionContainer(props: ContainerProps) {
    * Submit the form to either create or update the transaction
    */
   async function handleSubmitForm(data: CreateTransactionBody) {
-    let message = '';
+    const state: BannerState = {
+      message: '',
+      severity: 'success',
+    };
 
-    if (formState.type === 'CREATE') {
-      const created = await createTransaction(data);
-      message = `${created.tran_description} created successfully!`;
+    try {
+      if (formState.type === 'CREATE') {
+        const created = await createTransaction(data);
+        state.message = `${created.tran_description} created successfully!`;
 
-      // Move all back to the first page
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('offset');
-      router.replace(`?${params.toString()}`, { scroll: false });
-    } else {
-      const updated = await updateTransaction(
-        currentId,
-        convertToUpdateBody(data),
-      );
-      message = `${updated.tran_description} updated successfully!`;
+        // Move all back to the first page
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('offset');
+        router.replace(`?${params.toString()}`, { scroll: false });
+      } else {
+        const updated = await updateTransaction(
+          currentId,
+          convertToUpdateBody(data),
+        );
+        state.message = `${updated.tran_description} updated successfully!`;
+      }
+      router.refresh();
+      setFormState({ open: false, type: formState.type });
+    } catch (error) {
+      state.message =
+        error instanceof Error ? error.message : 'An unknown error occured';
+      state.severity = 'error';
     }
-    router.refresh();
-    openBanner(message);
-    setFormState({ open: false, type: formState.type });
+    openBanner(state);
   }
 
   /**
    * Delete the transaction
    */
   async function handleSubmitDialog() {
-    let message = '';
+    const state: BannerState = {
+      message: '',
+      severity: 'success',
+    };
 
-    message = await deleteTransaction(currentId);
-    router.refresh();
-    openBanner(message);
-    setDialogOpen(false);
+    try {
+      state.message = await deleteTransaction(currentId);
+      router.refresh();
+      setDialogOpen(false);
+    } catch (error) {
+      state.message =
+        error instanceof Error ? error.message : 'An unknown error occured';
+      state.severity = 'error';
+    }
+    openBanner(state);
   }
 
   /**

@@ -31,10 +31,6 @@ export async function fetchAnalysisInfo(
     };
     return analysisInfo;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error('An unknown error occurred');
-    }
+    throw error;
   }
 }

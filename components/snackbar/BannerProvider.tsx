@@ -10,8 +10,13 @@ import {
 } from 'react';
 
 const BannerContext = createContext({
-  openBanner: (message: string) => {},
+  openBanner: (state: BannerState) => {},
 });
+
+export type BannerState = {
+  message: string;
+  severity: 'success' | 'error';
+};
 
 export function useBanner() {
   const context = useContext(BannerContext);
@@ -20,7 +25,10 @@ export function useBanner() {
 
 export default function BannerProvider(props: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState('');
+  const [bannerState, setBannerState] = useState<BannerState>({
+    message: '',
+    severity: 'success',
+  });
 
   function handleClose(
     event: SyntheticEvent | Event,
@@ -32,8 +40,8 @@ export default function BannerProvider(props: { children: ReactNode }) {
     setOpen(false);
   }
 
-  function handleOpenBanner(message: string) {
-    setMessage(message);
+  function handleOpenBanner(state: BannerState) {
+    setBannerState(state);
     setOpen(true);
   }
 
@@ -47,8 +55,12 @@ export default function BannerProvider(props: { children: ReactNode }) {
         key={'topcenter'}
         onClose={handleClose}
       >
-        <Alert severity="success" variant="filled" sx={{ width: '100%' }}>
-          {message}
+        <Alert
+          severity={bannerState.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {bannerState.message}
         </Alert>
       </Snackbar>
     </BannerContext.Provider>

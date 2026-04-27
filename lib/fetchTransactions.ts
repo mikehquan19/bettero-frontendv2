@@ -39,11 +39,7 @@ export async function fetchTransactions(
 
     return paginatedData;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error('An unknown error occurred');
-    }
+    throw error;
   }
 }
 
@@ -65,11 +61,7 @@ export async function createTransaction(
 
     return resData.data as Transaction;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error('An unknown error occurred');
-    }
+    throw error;
   }
 }
 
@@ -92,11 +84,7 @@ export async function updateTransaction(
 
     return resData.data as Transaction;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error('An unknown error occurred');
-    }
+    throw error;
   }
 }
 
@@ -115,10 +103,6 @@ export async function deleteTransaction(id: number): Promise<string> {
 
     return resData.data as string;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error('An unknown error occurred');
-    }
+    throw error;
   }
 }
