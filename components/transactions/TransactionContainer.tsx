@@ -1,12 +1,10 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Account, PageLimit, PaginatedData, Transaction } from '@/interface';
+import { Account, PaginatedData, Transaction } from '@/interface';
+import { PageLimit } from '@/constant';
 import { createContext, useContext, useState } from 'react';
-import {
-  CreateTransactionBody,
-  UpdateTransactionBody,
-} from './TransactionForm';
+import { CreateTransactionBody, UpdateTransactionBody } from '@/interface';
 import TransactionTable from './TransactionTable';
 import TransactionForm from './TransactionForm';
 import TransactionDelete from './TransactionDelete';

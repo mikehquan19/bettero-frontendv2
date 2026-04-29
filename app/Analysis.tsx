@@ -4,15 +4,10 @@ import { Typography, Stack, Collapse, Button } from '@mui/material';
 import ExpenseChange from '@/components/charts/ExpenseChange';
 import ExpenseComposition from '@/components/charts/ExpenseComposition';
 import TransactionTable from '@/components/transactions/TransactionTable';
-import {
-  AnalysisInfo,
-  PageLimit,
-  PaginatedData,
-  Transaction,
-} from '@/interface';
+import { AnalysisInfo, PaginatedData, Transaction } from '@/interface';
 import useSWR from 'swr';
 import { useState, useEffect, MouseEvent } from 'react';
-import { BASE_URL } from '@/interface';
+import { BASE_URL, PageLimit } from '@/constant';
 
 export default function Analysis(props: { analysisData: AnalysisInfo }) {
   const [category, setCategory] = useState<string | null>(null);

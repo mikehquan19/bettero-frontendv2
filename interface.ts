@@ -132,37 +132,50 @@ export type CategoryProgress = {
   percentage: number;
 };
 
-export const categories = [
-  'Income',
-  'Housing',
-  'Automobile',
-  'Medical',
-  'Subscription',
-  'Grocery',
-  'Dining',
-  'Shopping',
-  'Gas',
-  'Others',
-];
+export type CreateTransactionBody = {
+  account_id: string;
+  merchant: string;
+  tran_description: string;
+  category: string;
+  amount: string;
+  created_at: string;
+};
 
-export const PageLimit = 15;
+export function defaultCreateTransactionBody() {
+  return {
+    account_id: '',
+    merchant: '',
+    tran_description: '',
+    category: '',
+    amount: '',
+    created_at: '',
+  } as CreateTransactionBody;
+}
 
-export const AutocompleteOptions = [
-  'Uber txn #8643',
-  'Starbucks txn #1657',
-  'Costco txn #928',
-  'Starbucks txn #6501',
-  'Target txn #4589',
-  'Uber txn #5252',
-  'Amazon txn #8771',
-  'Shell txn #7811',
-  'Walmart txn #9745',
-  'Uber txn #8173',
-  'McDonalds txn #2897',
-  'Costco txn #2684',
-  'Netflix txn #2058',
-  'Starbucks txn #2649',
-  'Netflix txn #3994',
-];
+export type TransactionFormError = {
+  account_id: string;
+  merchant: string;
+  tran_description: string;
+  category: string;
+  amount: string;
+  created_at: string;
+};
 
-export const BASE_URL = 'http://localhost:8080';
+export function defaultTransactionFormError() {
+  return {
+    account_id: '',
+    merchant: '',
+    tran_description: '',
+    category: '',
+    amount: '',
+    created_at: '',
+  } as TransactionFormError;
+}
+
+export type UpdateTransactionBody = {
+  merchant: string;
+  tran_description: string;
+  category: string;
+  amount: string;
+  created_at: string;
+};

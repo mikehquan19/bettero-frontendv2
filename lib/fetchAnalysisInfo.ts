@@ -1,6 +1,7 @@
 'use server';
 
-import { AnalysisInfo, BASE_URL } from '@/interface';
+import { AnalysisInfo } from '@/interface';
+import { BASE_URL } from '@/constant';
 
 /**
  * Server-fetch the spending analysis data of the user between 2 dates.

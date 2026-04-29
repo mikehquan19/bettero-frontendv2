@@ -1,6 +1,7 @@
 'use server';
 
-import { Account, BASE_URL } from '@/interface';
+import { Account } from '@/interface';
+import { BASE_URL } from '@/constant';
 
 /**
  * Server-fetching the list of accounts of the user.

@@ -28,13 +28,8 @@ import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SearchIcon from '@mui/icons-material/Search';
 import { MouseEvent, SyntheticEvent, useEffect, useState } from 'react';
-import {
-  PageLimit,
-  PaginatedData,
-  Transaction,
-  AutocompleteOptions,
-} from '@/interface';
-import { CreateTransactionBody } from './TransactionForm';
+import { PaginatedData, Transaction, CreateTransactionBody } from '@/interface';
+import { PageLimit, AutocompleteOptions } from '@/constant';
 import { useTransactionActions } from './TransactionContainer';
 
 function TransactionSearchBar() {

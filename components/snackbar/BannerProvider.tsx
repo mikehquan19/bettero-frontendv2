@@ -51,7 +51,7 @@ export default function BannerProvider(props: { children: ReactNode }) {
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={open}
-        autoHideDuration={5000}
+        autoHideDuration={4000}
         key={'topcenter'}
         onClose={handleClose}
       >

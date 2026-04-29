@@ -1,11 +1,8 @@
 'use server';
 
 import { PaginatedData, Transaction } from '@/interface';
-import { BASE_URL } from '@/interface';
-import {
-  CreateTransactionBody,
-  UpdateTransactionBody,
-} from '@/components/transactions/TransactionForm';
+import { BASE_URL } from '@/constant';
+import { CreateTransactionBody, UpdateTransactionBody } from '@/interface';
 import { revalidateTag } from 'next/cache';
 
 /**
@@ -49,7 +46,10 @@ export async function createTransaction(
   try {
     const res = await fetch(`${BASE_URL}/transactions`, {
       method: 'POST',
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        ...formData,
+        amount: Number(formData.amount), // Put it in a number
+      }),
     });
     const resData = await res.json();
     if (resData.error !== '') {
@@ -72,7 +72,10 @@ export async function updateTransaction(
   try {
     const res = await fetch(`${BASE_URL}/transactions/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        ...formData,
+        amount: Number(formData.amount), // Put it in a number
+      }),
     });
     const resData = await res.json();
     if (resData.error !== '') {

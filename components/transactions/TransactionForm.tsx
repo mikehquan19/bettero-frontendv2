@@ -17,37 +17,17 @@ import { PickerValue } from '@mui/x-date-pickers/internals';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { ChangeEvent, useEffect, useState } from 'react';
-import { Account, categories } from '@/interface';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import {
+  Account,
+  CreateTransactionBody,
+  defaultCreateTransactionBody,
+  defaultTransactionFormError,
+  TransactionFormError,
+} from '@/interface';
+import { categories } from '@/constant';
 import dayjs from 'dayjs';
-
-export type CreateTransactionBody = {
-  account_id: string;
-  merchant: string;
-  tran_description: string;
-  category: string;
-  amount: number;
-  created_at: string;
-};
-
-function defaultCreateTransactionBody() {
-  return {
-    account_id: '',
-    merchant: '',
-    tran_description: '',
-    category: '',
-    amount: 0,
-    created_at: '',
-  } as CreateTransactionBody;
-}
-
-export type UpdateTransactionBody = {
-  merchant: string;
-  tran_description: string;
-  category: string;
-  amount: number;
-  created_at: string;
-};
+import { BannerState, useBanner } from '../snackbar/BannerProvider';
 
 type TransactionFormProps = {
   type: 'CREATE' | 'UPDATE';
@@ -62,13 +42,40 @@ export default function TransactionForm(props: TransactionFormProps) {
   const [formData, setFormData] = useState<CreateTransactionBody>(
     defaultCreateTransactionBody(),
   );
+  const formErrorRef = useRef<TransactionFormError>(
+    defaultTransactionFormError(),
+  );
+  const openBanner = useBanner();
+  const formError = formErrorRef.current;
 
   useEffect(() => {
-    // Reset the data
+    // Reset the data and the error of the form
     if (props.open) {
       setFormData(props.currentData ?? defaultCreateTransactionBody());
+      formErrorRef.current = defaultTransactionFormError();
     }
   }, [props.open, props.currentData]);
+
+  function handleSubmit() {
+    let canSubmit = true;
+    Object.keys(formData).forEach((key) => {
+      if (
+        formData[key as keyof CreateTransactionBody] === '' ||
+        formError[key as keyof TransactionFormError] !== ''
+      ) {
+        canSubmit = false;
+        return;
+      }
+    });
+    if (canSubmit) {
+      props.onSubmit(formData);
+    } else {
+      openBanner({
+        message: "Can't submit the form due to field-level error",
+        severity: 'error',
+      } as BannerState);
+    }
+  }
 
   return (
     <Dialog
@@ -97,7 +104,9 @@ export default function TransactionForm(props: TransactionFormProps) {
                 }}
               >
                 {props.accounts.map((account) => (
-                  <MenuItem value={account.id}>{account.acc_name}</MenuItem>
+                  <MenuItem value={account.id}>
+                    {account.institution} {account.acc_name}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -110,8 +119,12 @@ export default function TransactionForm(props: TransactionFormProps) {
             label="Merchant"
             name="Merchant"
             value={formData.merchant}
+            error={formError.merchant.length > 0}
+            helperText={formError.merchant}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setFormData({ ...formData, merchant: e.target.value });
+              formError.merchant =
+                e.target.value.trim().length == 0 ? 'Required' : '';
+              setFormData({ ...formData, merchant: e.target.value.trim() });
             }}
           />
         </Grid>
@@ -122,8 +135,15 @@ export default function TransactionForm(props: TransactionFormProps) {
             label="Description"
             name="Description"
             value={formData.tran_description}
+            error={formError.tran_description.length > 0}
+            helperText={formError.tran_description}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setFormData({ ...formData, tran_description: e.target.value });
+              formError.tran_description =
+                e.target.value.trim().length == 0 ? 'Required' : '';
+              setFormData({
+                ...formData,
+                tran_description: e.target.value.trim(),
+              });
             }}
           />
         </Grid>
@@ -151,8 +171,22 @@ export default function TransactionForm(props: TransactionFormProps) {
             label="Amount"
             name="Amount"
             value={formData.amount}
+            error={formError.amount.length > 0}
+            helperText={formError.amount}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setFormData({ ...formData, amount: Number(e.target.value) });
+              if (e.target.value.trim() === '') {
+                formError.amount = 'Required';
+              } else if (Number.isNaN(Number(e.target.value.trim()))) {
+                formError.amount = 'Value must be numeric';
+              } else if (Number(e.target.value.trim()) <= 0) {
+                formError.amount = 'Value must be positive';
+              } else {
+                formError.amount = '';
+              }
+              setFormData({
+                ...formData,
+                amount: e.target.value.trim(),
+              });
             }}
           />
         </Grid>
@@ -178,9 +212,9 @@ export default function TransactionForm(props: TransactionFormProps) {
           type="submit"
           variant="contained"
           className="bg-gray-400 font-bold rounded-lg"
-          onClick={() => props.onSubmit(formData)}
+          onClick={handleSubmit}
         >
-          Done
+          Submit
         </Button>
       </DialogActions>
     </Dialog>
