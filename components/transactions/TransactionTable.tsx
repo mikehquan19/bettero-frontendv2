@@ -39,6 +39,7 @@ type Suggestion = {
   name: string;
   type: string;
 };
+
 function TransactionSearchBar() {
   const [keyword, setKeyword] = useState<string>('');
   const [descriptions, setDescriptions] = useState<Suggestion[]>([]);
@@ -74,7 +75,8 @@ function TransactionSearchBar() {
   );
 
   useEffect(() => {
-    // Keep the current options until new ones have been loaded, avoid flickering
+    // Keep the current options until new ones have been loaded,
+    // avoid flickering
     if (keyword.length > 0) {
       // When the options have been fetched and validated, use them
       if (!isValidating && data !== undefined) {
@@ -85,6 +87,8 @@ function TransactionSearchBar() {
     }
   }, [keyword, data, isValidating]);
 
+  console.log(descriptions)
+
   return (
     <div className="flex flex-row">
       <Autocomplete
@@ -92,11 +96,14 @@ function TransactionSearchBar() {
         freeSolo
         autoHighlight
         options={descriptions}
+        inputValue={keyword} // Control the keyword
         slotProps={{
           paper: {
             className: 'bg-blue-100 rounded-b-lg rounded-t-none',
           },
         }}
+        // Somehow if we don't do this, it wil filter by keyword matching
+        filterOptions={(options) => options}
         getOptionLabel={(option: string | Suggestion) => {
           // The options should always be Suggestion instead of string
           // MUI's type safety
@@ -110,8 +117,10 @@ function TransactionSearchBar() {
           const optionType =
             typeof option === 'string'
               ? null
-              : option.type.charAt(0).toUpperCase() + option.type.slice(1); // Capitalize
+              : // Capitalize
+                option.type.charAt(0).toUpperCase() + option.type.slice(1);
           return (
+            // Render the suggestion along with its option field
             <Box key={key} component="li" {...optionProps}>
               <Stack direction="column">
                 {optionType !== null && (
@@ -147,14 +156,14 @@ function TransactionSearchBar() {
           setKeyword(value);
           if (reason === 'clear') {
             // Clear the input, reset the transactions data
-            // value here is empty
+            // Value is technically empty
             searchTransactions('description', value);
           }
         }}
         onChange={(e: SyntheticEvent, value: Suggestion | string | null) => {
           e.preventDefault();
           if (!value || typeof value === 'string') {
-            // Options should always be defined suggestions, act as a fallback
+            // Options should always be defined suggestions
             return;
           }
           searchTransactions(
@@ -169,8 +178,15 @@ function TransactionSearchBar() {
           className="rounded-r-lg rounded-l-none"
           variant="contained"
           onClick={() => {
-            // Search for the current keyword
-            searchTransactions('description', keyword);
+            // If the current keyword has the list of suggestions,
+            // search for first one on click
+            if (descriptions.length > 0) {
+              setKeyword(descriptions[0].name);
+              searchTransactions(
+                descriptions[0].type as 'merchant' | 'description',
+                descriptions[0].name,
+              );
+            } 
           }}
         >
           <SearchIcon />
@@ -428,15 +444,13 @@ export default function TransactionTable(props: {
         </TableContainer>
       </Paper>
       {allowActions && (
-        <>
-          <Stack direction="row" className="justify-center mt-2">
-            <Tooltip title="Add transaction">
-              <IconButton id="add-transaction">
-                <AddCircleIcon fontSize="large" onClick={chooseCreate} />
-              </IconButton>
-            </Tooltip>
-          </Stack>
-        </>
+        <Stack direction="row" className="justify-center mt-2">
+          <Tooltip title="Add transaction">
+            <IconButton id="add-transaction">
+              <AddCircleIcon fontSize="large" onClick={chooseCreate} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       )}
     </>
   );
