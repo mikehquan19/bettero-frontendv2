@@ -1,3 +1,5 @@
+export const BASE_URL = 'http://localhost:8080';
+
 export const categories = [
   'Income',
   'Housing',
@@ -31,4 +33,13 @@ export const AutocompleteOptions = [
   'Netflix txn #3994',
 ];
 
-export const BASE_URL = 'http://localhost:8080';
+export const Institutions = [
+  'Bank of America',
+  'JP Morgan Chase',
+  'Wells Fargo',
+  'Citi Bank',
+  'Capital One',
+  'Discover',
+  'Sofi Bank',
+  'Ally Bank',
+];

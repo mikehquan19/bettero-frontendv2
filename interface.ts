@@ -44,6 +44,50 @@ export type Account = {
   updated_at: Date;
 };
 
+export type CreateAccountBody = {
+  acc_number: string;
+  acc_name: string;
+  institution: string;
+  type: 'Debit' | 'Credit';
+  balance: string;
+  credit_limit: string | null;
+  next_due: string | null;
+};
+
+export function defaultCreateAccountBody() {
+  return {
+    acc_number: '',
+    acc_name: '',
+    institution: '',
+    type: 'Debit',
+    balance: '',
+    credit_limit: null,
+    next_due: null,
+  } as CreateAccountBody;
+}
+
+export type CreateAccountError = {
+  acc_number: string;
+  acc_name: string;
+  institution: string;
+  type: string;
+  balance: string;
+  credit_limit: string;
+  next_due: string;
+};
+
+export function defaultCreateAccountError() {
+  return {
+    acc_number: '',
+    acc_name: '',
+    institution: '',
+    type: '',
+    balance: '',
+    credit_limit: '',
+    next_due: '',
+  } as CreateAccountError;
+}
+
 export type Transaction = {
   id: number;
   account: {

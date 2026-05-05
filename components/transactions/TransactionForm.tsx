@@ -5,19 +5,9 @@ import {
   Dialog,
   DialogActions,
   DialogTitle,
-  FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  TextField,
 } from '@mui/material';
-import { PickerValue } from '@mui/x-date-pickers/internals';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Account,
   CreateTransactionBody,
@@ -26,8 +16,14 @@ import {
   TransactionFormError,
 } from '@/interface';
 import { categories } from '@/constant';
-import dayjs from 'dayjs';
 import { BannerState, useBanner } from '../snackbar/BannerProvider';
+import {
+  SelectOption,
+  SelectField,
+  ValidatedTextField,
+  ValidatedNumberField,
+  DateTimeField,
+} from '../financial-card/AccountForm';
 
 type TransactionFormProps = {
   type: 'CREATE' | 'UPDATE';
@@ -39,42 +35,50 @@ type TransactionFormProps = {
 };
 
 export default function TransactionForm(props: TransactionFormProps) {
-  const [formData, setFormData] = useState<CreateTransactionBody>(
-    defaultCreateTransactionBody(),
-  );
-  const formErrorRef = useRef<TransactionFormError>(
-    defaultTransactionFormError(),
-  );
+  const [data, setData] = useState(defaultCreateTransactionBody());
+  const [error, setError] = useState(defaultTransactionFormError());
   const openBanner = useBanner();
-  const formError = formErrorRef.current;
+
+  const accountOptions = props.accounts.map(
+    (a) =>
+      ({
+        label: a.institution + "'s " + a.acc_name,
+        value: String(a.id),
+      }) as SelectOption,
+  );
 
   useEffect(() => {
     // Reset the data and the error of the form
     if (props.open) {
-      setFormData(props.currentData ?? defaultCreateTransactionBody());
-      formErrorRef.current = defaultTransactionFormError();
+      setData(props.currentData ?? defaultCreateTransactionBody());
+      setError(defaultTransactionFormError());
     }
   }, [props.open, props.currentData]);
 
   function handleSubmit() {
     let canSubmit = true;
-    Object.keys(formData).forEach((key) => {
+    Object.keys(data).forEach((key) => {
       if (
-        formData[key as keyof CreateTransactionBody] === '' ||
-        formError[key as keyof TransactionFormError] !== ''
+        data[key as keyof CreateTransactionBody] === '' ||
+        error[key as keyof TransactionFormError] !== ''
       ) {
         canSubmit = false;
         return;
       }
     });
     if (canSubmit) {
-      props.onSubmit(formData);
+      props.onSubmit(data);
     } else {
       openBanner({
         message: "Can't submit the form due to field-level error",
         severity: 'error',
       } as BannerState);
     }
+  }
+
+  function setField(field: string, value: string, _error: string) {
+    setData({ ...data, [field]: value });
+    setError({ ...error, [field]: _error });
   }
 
   return (
@@ -92,120 +96,46 @@ export default function TransactionForm(props: TransactionFormProps) {
       </DialogTitle>
       <Grid container spacing={2}>
         {props.type === 'CREATE' && (
-          <Grid size={6}>
-            <FormControl fullWidth required>
-              <InputLabel id="account-select">Account</InputLabel>
-              <Select
-                labelId="account-select"
-                label="Account"
-                value={formData.account_id}
-                onChange={(e: SelectChangeEvent) => {
-                  setFormData({ ...formData, account_id: e.target.value });
-                }}
-              >
-                {props.accounts.map((account) => (
-                  <MenuItem value={account.id}>
-                    {account.institution} {account.acc_name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+          <SelectField
+            label="Account"
+            options={accountOptions}
+            value={data.account_id}
+            error={error.account_id}
+            onChange={(value, error) => setField('account_id', value, error)}
+          />
         )}
-        <Grid size={6}>
-          <TextField
-            fullWidth
-            required
-            label="Merchant"
-            name="Merchant"
-            value={formData.merchant}
-            error={formError.merchant.length > 0}
-            helperText={formError.merchant}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              formError.merchant =
-                e.target.value.trim().length == 0 ? 'Required' : '';
-              setFormData({ ...formData, merchant: e.target.value.trim() });
-            }}
-          />
-        </Grid>
-        <Grid size={6}>
-          <TextField
-            fullWidth
-            required
-            label="Description"
-            name="Description"
-            value={formData.tran_description}
-            error={formError.tran_description.length > 0}
-            helperText={formError.tran_description}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              formError.tran_description =
-                e.target.value.trim().length == 0 ? 'Required' : '';
-              setFormData({
-                ...formData,
-                tran_description: e.target.value.trim(),
-              });
-            }}
-          />
-        </Grid>
-        <Grid size={6}>
-          <FormControl fullWidth required>
-            <InputLabel id="category-select">Category</InputLabel>
-            <Select
-              labelId="category-select"
-              label="Category"
-              value={formData.category}
-              onChange={(e) => {
-                setFormData({ ...formData, category: e.target.value });
-              }}
-            >
-              {categories.map((category) => (
-                <MenuItem value={category}>{category}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid size={6}>
-          <TextField
-            fullWidth
-            required
-            label="Amount"
-            name="Amount"
-            value={formData.amount}
-            error={formError.amount.length > 0}
-            helperText={formError.amount}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              if (e.target.value.trim() === '') {
-                formError.amount = 'Required';
-              } else if (Number.isNaN(Number(e.target.value.trim()))) {
-                formError.amount = 'Value must be numeric';
-              } else if (Number(e.target.value.trim()) <= 0) {
-                formError.amount = 'Value must be positive';
-              } else {
-                formError.amount = '';
-              }
-              setFormData({
-                ...formData,
-                amount: e.target.value.trim(),
-              });
-            }}
-          />
-        </Grid>
-        <Grid size={6}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              slotProps={{ textField: { fullWidth: true } }}
-              label="Created date"
-              value={
-                formData.created_at !== '' ? dayjs(formData.created_at) : null
-              }
-              onChange={(e: PickerValue) => {
-                if (e) {
-                  setFormData({ ...formData, created_at: e.toISOString() });
-                }
-              }}
-            />
-          </LocalizationProvider>
-        </Grid>
+        <ValidatedTextField
+          label="Merchant"
+          value={data.merchant}
+          error={error.merchant}
+          onChange={(value, error) => setField('merchant', value, error)}
+        />
+        <ValidatedTextField
+          label="Description"
+          value={data.tran_description}
+          error={error.tran_description}
+          onChange={(value, error) =>
+            setField('tran_description', value, error)
+          }
+        />
+        <SelectField
+          label="Category"
+          options={categories}
+          value={data.category}
+          error={error.category}
+          onChange={(value, error) => setField('category', value, error)}
+        />
+        <ValidatedNumberField
+          label="Amount"
+          value={data.amount}
+          error={error.amount}
+          onChange={(value, error) => setField('amount', value, error)}
+        />
+        <DateTimeField
+          label="Created date"
+          value={data.created_at}
+          onChange={(value) => setField('created_at', value, '')}
+        />
       </Grid>
       <DialogActions className="mt-4 flex flex-row justify-center">
         <Button
