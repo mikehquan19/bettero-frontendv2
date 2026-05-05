@@ -87,8 +87,6 @@ function TransactionSearchBar() {
     }
   }, [keyword, data, isValidating]);
 
-  console.log(descriptions)
-
   return (
     <div className="flex flex-row">
       <Autocomplete
@@ -96,13 +94,14 @@ function TransactionSearchBar() {
         freeSolo
         autoHighlight
         options={descriptions}
-        inputValue={keyword} // Control the keyword
+        // Control the keyword
+        inputValue={keyword}
         slotProps={{
           paper: {
             className: 'bg-blue-100 rounded-b-lg rounded-t-none',
           },
         }}
-        // Somehow if we don't do this, it wil filter by keyword matching
+        // Somehow if we don't do this, it will filter by keyword matching
         filterOptions={(options) => options}
         getOptionLabel={(option: string | Suggestion) => {
           // The options should always be Suggestion instead of string
@@ -148,22 +147,26 @@ function TransactionSearchBar() {
           />
         )}
         onInputChange={(
-          e: SyntheticEvent,
+          e: SyntheticEvent<Element, Event>,
           value: string,
           reason: AutocompleteInputChangeReason,
         ) => {
           e.preventDefault();
           setKeyword(value);
           if (reason === 'clear') {
-            // Clear the input, reset the transactions data
+            // Clear the input, reset the transactions data.
             // Value is technically empty
             searchTransactions('description', value);
           }
         }}
-        onChange={(e: SyntheticEvent, value: Suggestion | string | null) => {
+        onChange={(
+          e: SyntheticEvent<Element, Event>,
+          value: Suggestion | string | null,
+        ) => {
           e.preventDefault();
           if (!value || typeof value === 'string') {
             // Options should always be defined suggestions
+            // MUI's safety
             return;
           }
           searchTransactions(
@@ -186,7 +189,7 @@ function TransactionSearchBar() {
                 descriptions[0].type as 'merchant' | 'description',
                 descriptions[0].name,
               );
-            } 
+            }
           }}
         >
           <SearchIcon />
