@@ -21,6 +21,8 @@ import {
   Autocomplete,
   TextField,
   Button,
+  Box,
+  AutocompleteInputChangeReason,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -29,33 +31,101 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SearchIcon from '@mui/icons-material/Search';
 import { MouseEvent, SyntheticEvent, useEffect, useState } from 'react';
 import { PaginatedData, Transaction, CreateTransactionBody } from '@/interface';
-import { PageLimit, AutocompleteOptions } from '@/constant';
+import { PageLimit, BASE_URL } from '@/constant';
 import { useTransactionActions } from './TransactionContainer';
+import useSWR from 'swr';
 
+type Suggestion = {
+  name: string;
+  type: string;
+};
 function TransactionSearchBar() {
   const [keyword, setKeyword] = useState<string>('');
-  const [descriptions, setDescriptions] = useState<string[]>([]);
+  const [descriptions, setDescriptions] = useState<Suggestion[]>([]);
 
   const { searchTransactions } = useTransactionActions();
 
-  useEffect(() => {
-    if (keyword.length > 0) {
-      const matched = AutocompleteOptions.filter((o) =>
-        o.toLocaleLowerCase().includes(keyword.toLocaleLowerCase()),
+  // Fetcher function to get list of sugestions
+  async function suggestionFetcher(keyword: string): Promise<Suggestion[]> {
+    try {
+      const res = await fetch(
+        `${BASE_URL}/transactions/autocomplete?q=${keyword}`,
+        { method: 'GET' },
       );
-      const descriptions = matched.length > 0 ? matched : [keyword];
-      setDescriptions(descriptions);
+      const resData = await res.json();
+      if (resData.error !== '') {
+        console.log(resData.error);
+        return [];
+      }
+
+      return resData.data ?? [];
+    } catch (error) {
+      console.log(
+        error instanceof Error ? error.message : 'An unknown error occurred',
+      );
+      return [];
+    }
+  }
+
+  const { data, isValidating } = useSWR(
+    keyword.length > 0 ? keyword : null,
+    suggestionFetcher,
+    { keepPreviousData: true },
+  );
+
+  useEffect(() => {
+    // Keep the current options until new ones have been loaded, avoid flickering
+    if (keyword.length > 0) {
+      // When the options have been fetched and validated, use them
+      if (!isValidating && data !== undefined) {
+        setDescriptions(data);
+      }
     } else {
       setDescriptions([]);
     }
-  }, [keyword]);
+  }, [keyword, data, isValidating]);
 
   return (
     <div className="flex flex-row">
       <Autocomplete
         size="small"
         freeSolo
+        autoHighlight
         options={descriptions}
+        slotProps={{
+          paper: {
+            className: 'bg-blue-100 rounded-b-lg rounded-t-none',
+          },
+        }}
+        getOptionLabel={(option: string | Suggestion) => {
+          // The options should always be Suggestion instead of string
+          // MUI's type safety
+          if (typeof option === 'string') {
+            return option;
+          }
+          return option.name;
+        }}
+        renderOption={(props, option: string | Suggestion) => {
+          const { key, ...optionProps } = props;
+          const optionType =
+            typeof option === 'string'
+              ? null
+              : option.type.charAt(0).toUpperCase() + option.type.slice(1); // Capitalize
+          return (
+            <Box key={key} component="li" {...optionProps}>
+              <Stack direction="column">
+                {optionType !== null && (
+                  <Typography className="text-xs text-gray-500">
+                    {optionType}
+                  </Typography>
+                )}
+                <Typography>
+                  {typeof option === 'string' ? option : option.name}
+                </Typography>
+              </Stack>
+            </Box>
+          );
+        }}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -63,37 +133,44 @@ function TransactionSearchBar() {
             sx={{
               width: '250px',
               '& .MuiOutlinedInput-root': {
-                borderTopRightRadius: 0,
-                borderBottomRightRadius: 0,
-                borderTopLeftRadius: 8,
-                borderBottomLeftRadius: 8,
+                borderRadius: '8px 0 0 8px',
               },
             }}
           />
         )}
-        slotProps={{
-          paper: {
-            className: 'bg-blue-100 rounded-b-lg rounded-t-none',
-          },
-        }}
-        onInputChange={(e: SyntheticEvent, value: string) => {
+        onInputChange={(
+          e: SyntheticEvent,
+          value: string,
+          reason: AutocompleteInputChangeReason,
+        ) => {
           e.preventDefault();
           setKeyword(value);
+          if (reason === 'clear') {
+            // Clear the input, reset the transactions data
+            // value here is empty
+            searchTransactions('description', value);
+          }
         }}
-        onChange={(e: SyntheticEvent, value: string | null) => {
+        onChange={(e: SyntheticEvent, value: Suggestion | string | null) => {
           e.preventDefault();
-          searchTransactions(value);
+          if (!value || typeof value === 'string') {
+            // Options should always be defined suggestions, act as a fallback
+            return;
+          }
+          searchTransactions(
+            value.type as 'merchant' | 'description',
+            value.name,
+          );
         }}
       />
       <Tooltip title="Search">
         <Button
+          disableElevation
           className="rounded-r-lg rounded-l-none"
           variant="contained"
           onClick={() => {
-            // Click the button to search for the current keyword
-            if (keyword.length > 0) {
-              searchTransactions(keyword);
-            }
+            // Search for the current keyword
+            searchTransactions('description', keyword);
           }}
         >
           <SearchIcon />
@@ -184,7 +261,7 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
       merchant: transaction.merchant,
       tran_description: transaction.tran_description,
       category: transaction.category,
-      amount: transaction.amount,
+      amount: String(transaction.amount),
       created_at: new Date(transaction.created_at).toISOString(),
     } as CreateTransactionBody;
   }
@@ -246,7 +323,7 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
             if (selectedTransaction) {
               chooseUpdate(
                 selectedTransaction.id,
-                convertToCreateBody(selectedTransaction)!,
+                convertToCreateBody(selectedTransaction),
               );
             }
             setAnchorEl(null);
@@ -344,8 +421,8 @@ export default function TransactionTable(props: {
             <PaginationFooter
               totalCount={props.paginatedTransactions.total}
               page={currentPage}
-              onPageChange={props.onPageChange}
               countPerPage={PageLimit}
+              onPageChange={props.onPageChange}
             />
           </Table>
         </TableContainer>
@@ -355,10 +432,7 @@ export default function TransactionTable(props: {
           <Stack direction="row" className="justify-center mt-2">
             <Tooltip title="Add transaction">
               <IconButton id="add-transaction">
-                <AddCircleIcon
-                  fontSize="large"
-                  onClick={() => chooseCreate()}
-                />
+                <AddCircleIcon fontSize="large" onClick={chooseCreate} />
               </IconButton>
             </Tooltip>
           </Stack>

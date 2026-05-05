@@ -20,7 +20,7 @@ type TransactionActionContextProps = {
   chooseCreate: () => void;
   chooseUpdate: (id: number, data: CreateTransactionBody) => void;
   chooseDelete: (id: number) => void;
-  searchTransactions: (q: string | null) => void;
+  searchTransactions: (key: 'merchant' | 'description', value: string) => void;
 };
 const TransactionActionsContext = createContext<TransactionActionContextProps>({
   // Dummy functions
@@ -28,7 +28,7 @@ const TransactionActionsContext = createContext<TransactionActionContextProps>({
   chooseCreate: () => {},
   chooseUpdate: (id, data) => {},
   chooseDelete: (id) => {},
-  searchTransactions: (q) => {},
+  searchTransactions: (key, value) => {},
 });
 
 /**
@@ -154,16 +154,17 @@ export default function TransactionContainer(props: ContainerProps) {
   /**
    * Search for transaction with description
    */
-  function searchTransactions(q: string | null) {
+  function searchTransactions(key: 'merchant' | 'description', value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (q && q.length > 0) {
-      params.set('q', q);
-    } else {
-      params.delete('q');
-    }
+    params.delete('merchant');
+    params.delete('description');
 
     // Move to the first page of searched transactions
     params.delete('offset');
+
+    if (value.length > 0) {
+      params.set(key, value);
+    }
     router.replace(`?${params.toString()}`, { scroll: false });
   }
 

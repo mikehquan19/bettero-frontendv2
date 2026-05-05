@@ -8,6 +8,7 @@ import { AnalysisInfo, PaginatedData, Transaction } from '@/interface';
 import useSWR from 'swr';
 import { useState, useEffect, MouseEvent } from 'react';
 import { BASE_URL, PageLimit } from '@/constant';
+import { getTime } from '@/lib/time';
 
 export default function Analysis(props: { analysisData: AnalysisInfo }) {
   const [category, setCategory] = useState<string | null>(null);
@@ -18,47 +19,42 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   const changeData = props.analysisData.change;
   const compositionData = props.analysisData.composition;
 
+  async function transactionFetcher(key: {
+    category: string;
+    offset: number;
+  }): Promise<PaginatedData<Transaction[]>> {
+    try {
+      const [firstDate, lastDate] = getTime();
+
+      let url = `${BASE_URL}/transactions?`;
+      url += `category=${key.category}&start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
+
+      const res = await fetch(url, { method: 'GET' });
+      const resData = await res.json();
+      if (resData.error !== '') {
+        throw new Error(resData.error);
+      }
+
+      const paginatedTrans: PaginatedData<Transaction[]> = {
+        total: resData.data.total ?? 0,
+        offset: resData.data.offset ?? 0,
+        data: resData.data.data ?? [],
+      };
+
+      return paginatedTrans;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('An unknown error occurred');
+      }
+    }
+  }
+
   // Client-fetching the transactions of the given category of this month
   const { data, isValidating } = useSWR(
     category ? { category, offset: transactionsOffset } : null,
-    // The fetcher
-    async (key: {
-      category: string;
-      offset: number;
-    }): Promise<PaginatedData<Transaction[]>> => {
-      try {
-        const date = new Date();
-        const firstDate = new Date(date.getFullYear(), date.getMonth(), 1)
-          .toISOString()
-          .split('T')[0];
-        const lastDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-          .toISOString()
-          .split('T')[0];
-
-        let url = `${BASE_URL}/transactions?`;
-        url += `category=${key.category}&start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
-
-        const res = await fetch(url, { method: 'GET' });
-        const resData = await res.json();
-        if (resData.error !== '') {
-          throw new Error(resData.error);
-        }
-
-        const paginatedTrans: PaginatedData<Transaction[]> = {
-          total: resData.data.total ?? 0,
-          offset: resData.data.offset ?? 0,
-          data: resData.data.data ?? [],
-        };
-
-        return paginatedTrans;
-      } catch (error) {
-        if (error instanceof Error) {
-          throw error;
-        } else {
-          throw new Error('An unknown error occurred');
-        }
-      }
-    },
+    transactionFetcher,
     {
       keepPreviousData: true, // To keep previous data while loading new one
     },

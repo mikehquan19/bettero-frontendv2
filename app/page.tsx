@@ -7,27 +7,32 @@ import PageError from './pageError';
 import { fetchAnalysisInfo } from '@/lib/fetchAnalysisInfo';
 import Analysis from '@/app/Analysis';
 import TransactionContainer from '@/components/transactions/TransactionContainer';
+import { getTime } from '@/lib/time';
 
 export default async function Home(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const searchParams = await props.searchParams;
+  const merchant = searchParams.merchant
+    ? typeof searchParams.merchant === 'string'
+      ? searchParams.merchant
+      : searchParams.merchant[0]
+    : undefined;
+  const description = searchParams.description
+    ? typeof searchParams.description === 'string'
+      ? searchParams.description
+      : searchParams.description[0]
+    : undefined;
   const offset = Number(searchParams.offset ?? '0');
 
   // To get analysis of this month
-  const date = new Date();
-  const firstDate = new Date(date.getFullYear(), date.getMonth(), 1)
-    .toISOString()
-    .split('T')[0];
-  const lastDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-    .toISOString()
-    .split('T')[0];
+  const [firstDate, lastDate] = getTime();
 
   try {
     const [analysisData, accounts, paginatedTrans] = await Promise.all([
       fetchAnalysisInfo(firstDate, lastDate),
       fetchAccounts(),
-      fetchTransactions(offset),
+      fetchTransactions(merchant, description, offset),
     ]);
 
     const credit = accounts.filter((acc) => acc.type === 'Credit');

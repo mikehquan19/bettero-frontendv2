@@ -9,15 +9,23 @@ import { revalidateTag } from 'next/cache';
  * Server-fetch the list of latest transactions of user.
  */
 export async function fetchTransactions(
+  merchant: string | undefined,
+  description: string | undefined,
   offset: number,
 ): Promise<PaginatedData<Transaction[]>> {
   try {
-    const url = `${BASE_URL}/transactions?offset=${offset}`;
+    let url = `${BASE_URL}/transactions?offset=${offset}`;
+    if (merchant !== undefined) {
+      url += `&merchant=${merchant}`;
+    }
+    if (description !== undefined) {
+      url += `&description=${description}`;
+    }
     const res = await fetch(url, {
       method: 'GET',
       next: {
         // Cache the result for an hour or when it is invalidated by update functions
-        revalidate: 60 * 5,
+        revalidate: 60,
         tags: ['fetch-transactions'],
       },
     });
@@ -48,6 +56,7 @@ export async function createTransaction(
       method: 'POST',
       body: JSON.stringify({
         ...formData,
+        account_id: Number(formData.account_id),
         amount: Number(formData.amount), // Put it in a number
       }),
     });
