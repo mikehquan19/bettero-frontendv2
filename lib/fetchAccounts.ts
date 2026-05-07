@@ -1,7 +1,8 @@
 'use server';
 
-import { Account } from '@/interface';
+import { Account, CreateAccountBody } from '@/interface';
 import { BASE_URL } from '@/constant';
+import { revalidateTag } from 'next/cache';
 
 /**
  * Server-fetching the list of accounts of the user.
@@ -12,7 +13,7 @@ export async function fetchAccounts(): Promise<Account[]> {
     const res = await fetch(`${BASE_URL}/accounts`, {
       method: 'GET',
       next: {
-        revalidate: 60 * 5,
+        revalidate: 60,
         tags: ['fetch-accounts'],
       },
     });
@@ -22,6 +23,35 @@ export async function fetchAccounts(): Promise<Account[]> {
       throw new Error(resData.error);
     }
     return resData.data ?? [];
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+export async function createAccount(
+  formData: CreateAccountBody,
+): Promise<Account> {
+  try {
+    const res = await fetch(`${BASE_URL}/accounts`, {
+      method: 'POST',
+      body: JSON.stringify({
+        ...formData,
+        acc_number: Number(formData.acc_number),
+        balance: Number(formData.balance),
+        credit_limit: formData.credit_limit
+          ? Number(formData.credit_limit)
+          : null,
+      }),
+    });
+    const resData = await res.json();
+    if (resData.error !== '') {
+      throw new Error(resData.error);
+    }
+
+    revalidateTag('fetch-accounts', { expire: 0 });
+
+    return resData.data as Account;
   } catch (error) {
     throw error;
   }
