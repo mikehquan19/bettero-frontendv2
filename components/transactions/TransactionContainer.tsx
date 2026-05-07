@@ -99,15 +99,15 @@ export default function TransactionContainer(props: ContainerProps) {
    * Submit the form to either create or update the transaction
    */
   async function handleSubmitForm(data: CreateTransactionBody) {
-    const state: BannerState = {
-      message: '',
-      severity: 'success',
-    };
+    let state: BannerState;
 
     try {
       if (formState.type === 'CREATE') {
         const created = await createTransaction(data);
-        state.message = `${created.tran_description} created successfully!`;
+        state = {
+          message: `${created.tran_description} created successfully!`,
+          severity: 'success',
+        };
 
         // Move all back to the first page
         const params = new URLSearchParams(searchParams.toString());
@@ -118,14 +118,19 @@ export default function TransactionContainer(props: ContainerProps) {
           currentId,
           convertToUpdateBody(data),
         );
-        state.message = `${updated.tran_description} updated successfully!`;
+        state = {
+          message: `${updated.tran_description} updated successfully!`,
+          severity: 'success',
+        };
       }
       router.refresh();
       setFormState({ open: false, type: formState.type });
     } catch (error) {
-      state.message =
-        error instanceof Error ? error.message : 'An unknown error occured';
-      state.severity = 'error';
+      state = {
+        message:
+          error instanceof Error ? error.message : 'An unknown error occured',
+        severity: 'error',
+      };
     }
     openBanner(state);
   }

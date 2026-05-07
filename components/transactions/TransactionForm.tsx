@@ -54,8 +54,7 @@ export default function TransactionForm(props: TransactionFormProps) {
       }) as SelectOption,
   );
 
-  // Reset the data and the error of the form
-  // when opening or closing the form
+  // Reset the data and the error of the form when opening or closing the form
   useEffect(() => {
     if (props.open) {
       setData(props.currentData ?? defaultCreateTransactionBody());
@@ -86,7 +85,7 @@ export default function TransactionForm(props: TransactionFormProps) {
 
   function setField(field: string, value: string, _error: string) {
     if (!(field in data && field in error)) {
-      // Internal error, 
+      // Internal error,
       // developer recheck the field naming when this happens
       throw new Error('Invalid field, not in data or error: ' + field);
     }
@@ -109,46 +108,58 @@ export default function TransactionForm(props: TransactionFormProps) {
       </DialogTitle>
       <Grid container spacing={2}>
         {props.type === 'CREATE' && (
-          <SelectField
-            label="Account"
-            options={accountOptions}
-            value={data.account_id}
-            error={error.account_id}
-            onChange={(value, error) => setField('account_id', value, error)}
-          />
+          <Grid spacing={6}>
+            <SelectField
+              label="Account"
+              options={accountOptions}
+              value={data.account_id}
+              error={error.account_id}
+              onChange={(value, error) => setField('account_id', value, error)}
+            />
+          </Grid>
         )}
-        <ValidatedTextField
-          label="Merchant"
-          value={data.merchant}
-          error={error.merchant}
-          onChange={(value, error) => setField('merchant', value, error)}
-        />
-        <ValidatedTextField
-          label="Description"
-          value={data.tran_description}
-          error={error.tran_description}
-          onChange={(value, error) =>
-            setField('tran_description', value, error)
-          }
-        />
-        <SelectField
-          label="Category"
-          options={categories}
-          value={data.category}
-          error={error.category}
-          onChange={(value, error) => setField('category', value, error)}
-        />
-        <ValidatedNumberField
-          label="Amount"
-          value={data.amount}
-          error={error.amount}
-          onChange={(value, error) => setField('amount', value, error)}
-        />
-        <DateTimeField
-          label="Created date"
-          value={data.created_at}
-          onChange={(value) => setField('created_at', value, '')}
-        />
+        <Grid spacing={6}>
+          <ValidatedTextField
+            label="Merchant"
+            value={data.merchant}
+            error={error.merchant}
+            onChange={(value, error) => setField('merchant', value, error)}
+          />
+        </Grid>
+        <Grid spacing={6}>
+          <ValidatedTextField
+            label="Description"
+            value={data.tran_description}
+            error={error.tran_description}
+            onChange={(value, error) =>
+              setField('tran_description', value, error)
+            }
+          />
+        </Grid>
+        <Grid spacing={6}>
+          <SelectField
+            label="Category"
+            options={categories}
+            value={data.category}
+            error={error.category}
+            onChange={(value, error) => setField('category', value, error)}
+          />
+        </Grid>
+        <Grid spacing={6}>
+          <ValidatedNumberField
+            label="Amount"
+            value={data.amount}
+            error={error.amount}
+            onChange={(value, error) => setField('amount', value, error)}
+          />
+        </Grid>
+        <Grid spacing={6}>
+          <DateTimeField
+            label="Created date"
+            value={data.created_at}
+            onChange={(value) => setField('created_at', value, '')}
+          />
+        </Grid>
       </Grid>
       <DialogActions className="mt-4 flex flex-row justify-center">
         <Button

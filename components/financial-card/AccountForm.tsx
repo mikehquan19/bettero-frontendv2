@@ -58,20 +58,18 @@ export function ValidatedNumberField(props: FieldProps) {
   }
 
   return (
-    <Grid size={6}>
-      <TextField
-        fullWidth
-        required
-        label={props.label}
-        name={props.label}
-        value={props.value}
-        error={props.error.length > 0}
-        helperText={props.error}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-          handleChangeField(e);
-        }}
-      />
-    </Grid>
+    <TextField
+      fullWidth
+      required
+      label={props.label}
+      name={props.label}
+      value={props.value}
+      error={props.error.length > 0}
+      helperText={props.error}
+      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+        handleChangeField(e);
+      }}
+    />
   );
 }
 
@@ -84,20 +82,18 @@ export function ValidatedTextField(props: FieldProps) {
   }
 
   return (
-    <Grid size={6}>
-      <TextField
-        fullWidth
-        required
-        label={props.label}
-        name={props.label}
-        value={props.value}
-        error={props.error.length > 0}
-        helperText={props.error}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-          handleChangeField(e);
-        }}
-      />
-    </Grid>
+    <TextField
+      fullWidth
+      required
+      label={props.label}
+      name={props.label}
+      value={props.value}
+      error={props.error.length > 0}
+      helperText={props.error}
+      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+        handleChangeField(e);
+      }}
+    />
   );
 }
 
@@ -116,7 +112,7 @@ type SelectFieldProps = {
 
 /**
  * Select form field with basic validations, working any options.
- * The options can either be list of string or SelectOption. 
+ * The options can either be list of string or SelectOption.
  * When the option is any other types, transform it to SelectOption.
  */
 export function SelectField(props: SelectFieldProps) {
@@ -148,39 +144,36 @@ export function SelectField(props: SelectFieldProps) {
   }
 
   return (
-    <Grid size={6}>
-      <FormControl fullWidth required>
-        <InputLabel
-          id={`${props.label}-select`}
-          className={
-            // Couldn't find a built-in way to make Select behave like TextField.
-            // Custom style
-            props.error.length > 0 ? 'text-red-600 peer-focus:text-red-600' : ''
-          }
-        >
-          {props.label}
-        </InputLabel>
-        <Select
-          labelId={`${props.label}-select`}
-          label={props.label}
-          value={props.value}
-          error={props.error.length > 0}
-          onChange={(e: SelectChangeEvent) => {
-            handleChangeField(e);
-          }}
-        >
-          {sortedOptions.map((option) => (
-            <MenuItem value={option.value}>{option.label}</MenuItem>
-          ))}
-        </Select>
-        {props.error.length > 0 && (
-          // Like defaultText
-          <Typography className="mt-1 ml-4 text-xs text-red-600">
-            {props.error}
-          </Typography>
-        )}
-      </FormControl>
-    </Grid>
+    <FormControl fullWidth required>
+      <InputLabel
+        id={`${props.label}-select`}
+        className={
+          // Couldn't find a built-in way to make Select behave like TextField.
+          props.error.length > 0 ? 'text-red-600 peer-focus:text-red-600' : ''
+        }
+      >
+        {props.label}
+      </InputLabel>
+      <Select
+        labelId={`${props.label}-select`}
+        label={props.label}
+        value={props.value}
+        error={props.error.length > 0}
+        onChange={(e: SelectChangeEvent) => {
+          handleChangeField(e);
+        }}
+      >
+        {sortedOptions.map((option) => (
+          <MenuItem value={option.value}>{option.label}</MenuItem>
+        ))}
+      </Select>
+      {props.error.length > 0 && (
+        // Like defaultText in TextField
+        <Typography className="mt-1 ml-4 text-xs text-red-600">
+          {props.error}
+        </Typography>
+      )}
+    </FormControl>
   );
 }
 
@@ -193,21 +186,19 @@ export function DateTimeField(props: {
   onChange: (value: string) => void;
 }) {
   return (
-    <Grid size={6}>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DatePicker
-          slotProps={{ textField: { fullWidth: true } }}
-          label={props.label}
-          value={props.value && props.value !== '' ? dayjs(props.value) : null}
-          onChange={(e: PickerValue) => {
-            if (e) {
-              // Value is in ISO string to send to the backend
-              props.onChange(e.toISOString());
-            }
-          }}
-        />
-      </LocalizationProvider>
-    </Grid>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <DatePicker
+        slotProps={{ textField: { fullWidth: true } }}
+        label={props.label}
+        value={props.value && props.value !== '' ? dayjs(props.value) : null}
+        onChange={(e: PickerValue) => {
+          if (e) {
+            // Value is in ISO string to send to the backend
+            props.onChange(e.toISOString());
+          }
+        }}
+      />
+    </LocalizationProvider>
   );
 }
 
@@ -294,47 +285,61 @@ export default function AccountForm(props: AccountFormProps) {
         {props.type} {props.accountType.toLocaleUpperCase()} ACCOUNTS
       </DialogTitle>
       <Grid container spacing={2}>
-        <ValidatedNumberField
-          label="Account number"
-          value={data.acc_number}
-          error={error.acc_number}
-          onChange={(value, error) => {
-            setField('acc_number', value, error);
-          }}
-        />
-        <ValidatedTextField
-          label="Account name"
-          value={data.acc_name}
-          error={error.acc_name}
-          onChange={(value, error) => setField('acc_name', value, error)}
-        />
-        <SelectField
-          options={Institutions}
-          label="Institution"
-          value={data.institution}
-          error={error.institution}
-          onChange={(value, error) => setField('institution', value, error)}
-        />
-        <ValidatedNumberField
-          label="Balance"
-          value={data.balance}
-          error={error.balance}
-          onChange={(value, error) => setField('balance', value, error)}
-        />
-        {props.accountType === 'Credit' && (
+        <Grid spacing={6}>
           <ValidatedNumberField
-            label="Credit limit"
-            value={data.credit_limit ?? ''}
-            error={error.credit_limit}
-            onChange={(value, error) => setField('credit_limit', value, error)}
+            label="Account number"
+            value={data.acc_number}
+            error={error.acc_number}
+            onChange={(value, error) => {
+              setField('acc_number', value, error);
+            }}
           />
+        </Grid>
+        <Grid spacing={6}>
+          <ValidatedTextField
+            label="Account name"
+            value={data.acc_name}
+            error={error.acc_name}
+            onChange={(value, error) => setField('acc_name', value, error)}
+          />
+        </Grid>
+        <Grid spacing={6}>
+          <SelectField
+            options={Institutions}
+            label="Institution"
+            value={data.institution}
+            error={error.institution}
+            onChange={(value, error) => setField('institution', value, error)}
+          />
+        </Grid>
+        <Grid spacing={6}>
+          <ValidatedNumberField
+            label="Balance"
+            value={data.balance}
+            error={error.balance}
+            onChange={(value, error) => setField('balance', value, error)}
+          />
+        </Grid>
+        {props.accountType === 'Credit' && (
+          <Grid spacing={6}>
+            <ValidatedNumberField
+              label="Credit limit"
+              value={data.credit_limit ?? ''}
+              error={error.credit_limit}
+              onChange={(value, error) =>
+                setField('credit_limit', value, error)
+              }
+            />
+          </Grid>
         )}
         {props.accountType === 'Credit' && (
-          <DateTimeField
-            label="Credit due"
-            value={data.next_due}
-            onChange={(value) => setField('next_due', value, '')}
-          />
+          <Grid spacing={6}>
+            <DateTimeField
+              label="Credit due"
+              value={data.next_due}
+              onChange={(value) => setField('next_due', value, '')}
+            />
+          </Grid>
         )}
       </Grid>
       <DialogActions className="mt-4 flex flex-row justify-center">
