@@ -18,7 +18,7 @@ import { PickerValue } from '@mui/x-date-pickers/internals';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import {
   CreateAccountBody,
   CreateAccountError,
@@ -36,6 +36,10 @@ type FieldProps = {
   onChange: (value: string, error: string) => void;
 };
 
+/**
+ * TextField that enforces the validation for numerical input.
+ * The value the parent component gets is string, but convertible to number
+ */
 export function ValidatedNumberField(props: FieldProps) {
   function handleChangeField(e: ChangeEvent<HTMLInputElement>) {
     // Validate the positive numeric value
@@ -71,6 +75,7 @@ export function ValidatedNumberField(props: FieldProps) {
   );
 }
 
+/** TextField with validation */
 export function ValidatedTextField(props: FieldProps) {
   function handleChangeField(e: ChangeEvent<HTMLInputElement>) {
     const _error =
@@ -109,6 +114,11 @@ type SelectFieldProps = {
   onChange: (value: string, error: string) => void;
 };
 
+/**
+ * Select form field with basic validations, working any options.
+ * The options can either be list of string or SelectOption. 
+ * When the option is any other types, transform it to SelectOption.
+ */
 export function SelectField(props: SelectFieldProps) {
   function convertToOption(str: string) {
     return { label: str, value: str } as SelectOption;
@@ -122,9 +132,9 @@ export function SelectField(props: SelectFieldProps) {
         : (props.options as SelectOption[]);
 
     // Add the none option at the beginning
-    const none = { label: 'None', value: '' } as SelectOption;
+    const noneOption = { label: 'None', value: '' } as SelectOption;
     sortedOptions = [
-      none,
+      noneOption,
       ...sortedOptions.toSorted((a, b) => {
         return a.label.localeCompare(b.label);
       }),
@@ -143,7 +153,7 @@ export function SelectField(props: SelectFieldProps) {
         <InputLabel
           id={`${props.label}-select`}
           className={
-            // Couldn't find a built-in way to make select behave like TextField,
+            // Couldn't find a built-in way to make Select behave like TextField.
             // Custom style
             props.error.length > 0 ? 'text-red-600 peer-focus:text-red-600' : ''
           }
@@ -174,6 +184,9 @@ export function SelectField(props: SelectFieldProps) {
   );
 }
 
+/**
+ * Date time field. Currently, it doesn't have any validations.
+ */
 export function DateTimeField(props: {
   label: string;
   value: string | null;
@@ -207,18 +220,30 @@ type AccountFormProps = {
   onSubmit: (data: CreateAccountBody) => void;
 };
 
+/**
+ * Form to create or update financial account
+ */
 export default function AccountForm(props: AccountFormProps) {
-  const [data, setData] = useState(defaultCreateAccountBody());
+  const [data, setData] = useState(
+    props.currentData ??
+      ({
+        ...defaultCreateAccountBody(),
+        type: props.accountType,
+      } as CreateAccountBody),
+  );
   const [error, setError] = useState(defaultCreateAccountError());
   const openBanner = useBanner();
 
+  // Reset the data and the error when closing or opening the form
   useEffect(() => {
-    // Reset the data and the error when closing or opening the form
     if (props.open) {
-      setData({
-        ...defaultCreateAccountBody(),
-        type: props.accountType,
-      } as CreateAccountBody);
+      setData(
+        props.currentData ??
+          ({
+            ...defaultCreateAccountBody(),
+            type: props.accountType,
+          } as CreateAccountBody),
+      );
       setError(defaultCreateAccountError());
     }
   }, [props.open, props.currentData]);
@@ -227,7 +252,7 @@ export default function AccountForm(props: AccountFormProps) {
     let canSubmit = true;
     Object.keys(data).forEach((key) => {
       if (
-        // CreateAccountBody and CreateAccountError share identical fields,
+        // Since CreateAccountBody and CreateAccountError share identical fields,
         // check both simultaneously
         data[key as keyof CreateAccountBody] === '' ||
         error[key as keyof CreateAccountError] !== ''
@@ -247,6 +272,10 @@ export default function AccountForm(props: AccountFormProps) {
   }
 
   function setField(field: string, value: string, _error: string) {
+    if (!(field in data && field in error)) {
+      // Internal error, rechecking the field naming when this happens
+      throw new Error('Invalid field, not in data or error: ' + field);
+    }
     setData({ ...data, [field]: value });
     setError({ ...error, [field]: _error });
   }

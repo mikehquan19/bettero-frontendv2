@@ -34,11 +34,18 @@ type TransactionFormProps = {
   onSubmit: (data: CreateTransactionBody) => void;
 };
 
+/**
+ * Form to create or update transaction.
+ * Uses the custom built form fields created in AccountForm.tsx
+ */
 export default function TransactionForm(props: TransactionFormProps) {
-  const [data, setData] = useState(defaultCreateTransactionBody());
+  const [data, setData] = useState(
+    props.currentData ?? defaultCreateTransactionBody(),
+  );
   const [error, setError] = useState(defaultTransactionFormError());
   const openBanner = useBanner();
 
+  // Convert the list of accounts to select options for custom select field
   const accountOptions = props.accounts.map(
     (a) =>
       ({
@@ -47,8 +54,9 @@ export default function TransactionForm(props: TransactionFormProps) {
       }) as SelectOption,
   );
 
+  // Reset the data and the error of the form
+  // when opening or closing the form
   useEffect(() => {
-    // Reset the data and the error of the form
     if (props.open) {
       setData(props.currentData ?? defaultCreateTransactionBody());
       setError(defaultTransactionFormError());
@@ -77,6 +85,11 @@ export default function TransactionForm(props: TransactionFormProps) {
   }
 
   function setField(field: string, value: string, _error: string) {
+    if (!(field in data && field in error)) {
+      // Internal error, 
+      // developer recheck the field naming when this happens
+      throw new Error('Invalid field, not in data or error: ' + field);
+    }
     setData({ ...data, [field]: value });
     setError({ ...error, [field]: _error });
   }
