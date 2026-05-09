@@ -108,7 +108,7 @@ export default function TransactionForm(props: TransactionFormProps) {
       </DialogTitle>
       <Grid container spacing={2}>
         {props.type === 'CREATE' && (
-          <Grid spacing={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <SelectField
               label="Account"
               options={accountOptions}
@@ -118,7 +118,8 @@ export default function TransactionForm(props: TransactionFormProps) {
             />
           </Grid>
         )}
-        <Grid spacing={6}>
+
+        <Grid size={{ xs: 12, md: 6 }}>
           <ValidatedTextField
             label="Merchant"
             value={data.merchant}
@@ -126,7 +127,8 @@ export default function TransactionForm(props: TransactionFormProps) {
             onChange={(value, error) => setField('merchant', value, error)}
           />
         </Grid>
-        <Grid spacing={6}>
+
+        <Grid size={{ xs: 12, md: 6 }}>
           <ValidatedTextField
             label="Description"
             value={data.tran_description}
@@ -136,7 +138,8 @@ export default function TransactionForm(props: TransactionFormProps) {
             }
           />
         </Grid>
-        <Grid spacing={6}>
+
+        <Grid size={{ xs: 12, md: 6 }}>
           <SelectField
             label="Category"
             options={categories}
@@ -145,7 +148,8 @@ export default function TransactionForm(props: TransactionFormProps) {
             onChange={(value, error) => setField('category', value, error)}
           />
         </Grid>
-        <Grid spacing={6}>
+
+        <Grid size={{ xs: 12, md: 6 }}>
           <ValidatedNumberField
             label="Amount"
             value={data.amount}
@@ -153,7 +157,8 @@ export default function TransactionForm(props: TransactionFormProps) {
             onChange={(value, error) => setField('amount', value, error)}
           />
         </Grid>
-        <Grid spacing={6}>
+
+        <Grid size={{ xs: 12, md: 6 }}>
           <DateTimeField
             label="Created date"
             value={data.created_at}
