@@ -1,6 +1,6 @@
 'use client';
 
-import { Typography, Stack, Collapse, Button } from '@mui/material';
+import { Typography, Stack, Collapse, Button, Tooltip } from '@mui/material';
 import ExpenseChange from '@/components/charts/ExpenseChange';
 import ExpenseComposition from '@/components/charts/ExpenseComposition';
 import TransactionTable from '@/components/transactions/TransactionTable';
@@ -10,15 +10,39 @@ import { useState, useEffect, MouseEvent } from 'react';
 import { BASE_URL, PageLimit } from '@/constant';
 import { getTime } from '@/lib/time';
 
+/**
+ * Button to close the collapse
+ */
+function CollapseButton(props: {
+  className: string | undefined;
+  onClick: () => void;
+}) {
+  return (
+    <div className={props.className}>
+      <Tooltip title="Hide the table">
+        <Button
+          variant="contained"
+          className="bg-gray-400 font-bold rounded-lg"
+          onClick={() => props.onClick()}
+        >
+          Close
+        </Button>
+      </Tooltip>
+    </div>
+  );
+}
+
 export default function Analysis(props: { analysisData: AnalysisInfo }) {
   const [category, setCategory] = useState<string | null>(null);
-  const [transactionTableOpen, setTransactionTableOpen] =
-    useState<boolean>(false);
+  const [tableOpen, setTableOpen] = useState<boolean>(false);
   const [transactionsOffset, setTransactionsOffset] = useState<number>(0);
 
   const changeData = props.analysisData.change;
   const compositionData = props.analysisData.composition;
 
+  /**
+   * Fetcher for client-fetching using useSWR
+   */
   async function transactionFetcher(key: {
     category: string;
     offset: number;
@@ -63,10 +87,10 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   useEffect(() => {
     // If it's not open, open if initial data has been loaded.
     // Otherwise, close if button is clicked.
-    if (!transactionTableOpen) {
-      setTransactionTableOpen(category !== null && !isValidating);
+    if (!tableOpen) {
+      setTableOpen(category !== null && !isValidating);
     } else if (category == null) {
-      setTransactionTableOpen(false);
+      setTableOpen(false);
     }
   }, [category, isValidating]);
 
@@ -82,10 +106,13 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   return (
     <>
       {/* Spending analysis */}
-      <Typography variant="h5" className="font-bold mb-1">
+      <Typography
+        variant="h6"
+        className="bg-gray-400 font-bold p-2 rounded-t-xl text-white"
+      >
         Spending analysis this month
       </Typography>
-      <Stack className="bg-blue-300 rounded-xl shadow-lg p-4">
+      <Stack className="bg-blue-300 rounded-b-xl shadow-lg p-4">
         <Stack direction="row" className="justify-evenly">
           <ExpenseChange percentages={changeData} />
           <ExpenseComposition
@@ -95,25 +122,15 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
         </Stack>
 
         {/* Collapsible transaction table */}
-        <Collapse
-          className="mt-8"
-          in={transactionTableOpen}
-          timeout="auto"
-          unmountOnExit
-        >
+        <Collapse className="mt-8" in={tableOpen} timeout="auto" unmountOnExit>
           <TransactionTable
             paginatedTransactions={data!}
             onPageChange={handlePageChange}
           />
-          <div className="mt-2 flex flex-row justify-center">
-            <Button
-              variant="contained"
-              className="bg-gray-400 font-bold rounded-lg"
-              onClick={() => setCategory(null)}
-            >
-              Close
-            </Button>
-          </div>
+          <CollapseButton
+            className="mt-2 flex flex-row justify-center"
+            onClick={() => setCategory(null)}
+          />
         </Collapse>
       </Stack>
     </>

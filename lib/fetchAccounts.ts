@@ -12,8 +12,11 @@ export async function fetchAccounts(): Promise<Account[]> {
   try {
     const res = await fetch(`${BASE_URL}/accounts`, {
       method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
       next: {
-        revalidate: 60,
+        revalidate: 60 * 60,
         tags: ['fetch-accounts'],
       },
     });
@@ -28,13 +31,18 @@ export async function fetchAccounts(): Promise<Account[]> {
   }
 }
 
-
+/**
+ * Create the account and then revalidate the account list
+ */
 export async function createAccount(
   formData: CreateAccountBody,
 ): Promise<Account> {
   try {
     const res = await fetch(`${BASE_URL}/accounts`, {
       method: 'POST',
+      headers: {
+        Accept: 'application/json',
+      },
       body: JSON.stringify({
         ...formData,
         acc_number: Number(formData.acc_number),

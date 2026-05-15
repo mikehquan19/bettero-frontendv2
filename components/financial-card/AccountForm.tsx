@@ -285,7 +285,7 @@ export default function AccountForm(props: AccountFormProps) {
         {props.type} {props.accountType.toLocaleUpperCase()} ACCOUNTS
       </DialogTitle>
       <Grid container spacing={2}>
-        <Grid size={{xs: 12, md: 6}}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <ValidatedNumberField
             label="Account number"
             value={data.acc_number}
@@ -295,7 +295,7 @@ export default function AccountForm(props: AccountFormProps) {
             }}
           />
         </Grid>
-        <Grid size={{xs: 12, md: 6}}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <ValidatedTextField
             label="Account name"
             value={data.acc_name}
@@ -303,7 +303,7 @@ export default function AccountForm(props: AccountFormProps) {
             onChange={(value, error) => setField('acc_name', value, error)}
           />
         </Grid>
-        <Grid size={{xs: 12, md: 6}}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <SelectField
             options={Institutions}
             label="Institution"
@@ -312,7 +312,7 @@ export default function AccountForm(props: AccountFormProps) {
             onChange={(value, error) => setField('institution', value, error)}
           />
         </Grid>
-        <Grid size={{xs: 12, md: 6}}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <ValidatedNumberField
             label="Balance"
             value={data.balance}
@@ -321,7 +321,7 @@ export default function AccountForm(props: AccountFormProps) {
           />
         </Grid>
         {props.accountType === 'Credit' && (
-          <Grid size={{xs: 12, md: 6}}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <ValidatedNumberField
               label="Credit limit"
               value={data.credit_limit ?? ''}
@@ -333,7 +333,7 @@ export default function AccountForm(props: AccountFormProps) {
           </Grid>
         )}
         {props.accountType === 'Credit' && (
-          <Grid size={{xs: 12, md: 6}}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <DateTimeField
               label="Credit due"
               value={data.next_due}

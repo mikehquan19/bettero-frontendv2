@@ -23,11 +23,15 @@ export async function fetchTransactions(
     }
     const res = await fetch(url, {
       method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
       next: {
         // Cache the result for an hour or when it is invalidated by update functions
-        revalidate: 60,
+        revalidate: 60 * 30,
         tags: ['fetch-transactions'],
       },
+      
     });
 
     const resData = await res.json();
@@ -54,6 +58,9 @@ export async function createTransaction(
   try {
     const res = await fetch(`${BASE_URL}/transactions`, {
       method: 'POST',
+      headers: {
+        Accept: 'application/json',
+      },
       body: JSON.stringify({
         ...formData,
         account_id: Number(formData.account_id),
@@ -65,8 +72,13 @@ export async function createTransaction(
       throw new Error(resData.error);
     }
 
-    revalidateTag('fetch-transactions', { expire: 0 });
-    revalidateTag('fetch-accounts', { expire: 0 });
+    for (const tag of [
+      'fetch-transactions',
+      'fetch-accounts',
+      'fetch-analysis',
+    ]) {
+      revalidateTag(tag, { expire: 0 });
+    }
 
     return resData.data as Transaction;
   } catch (error) {
@@ -81,6 +93,9 @@ export async function updateTransaction(
   try {
     const res = await fetch(`${BASE_URL}/transactions/${id}`, {
       method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+      },
       body: JSON.stringify({
         ...formData,
         amount: Number(formData.amount), // Put it in a number
@@ -91,8 +106,13 @@ export async function updateTransaction(
       throw new Error(resData.error);
     }
 
-    revalidateTag('fetch-transactions', { expire: 0 });
-    revalidateTag('fetch-accounts', { expire: 0 });
+    for (const tag of [
+      'fetch-transactions',
+      'fetch-accounts',
+      'fetch-analysis',
+    ]) {
+      revalidateTag(tag, { expire: 0 });
+    }
 
     return resData.data as Transaction;
   } catch (error) {
@@ -104,14 +124,22 @@ export async function deleteTransaction(id: number): Promise<string> {
   try {
     const res = await fetch(`${BASE_URL}/transactions/${id}`, {
       method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+      },
     });
     const resData = await res.json();
     if (resData.error !== '') {
       throw new Error(resData.error);
     }
 
-    revalidateTag('fetch-transactions', { expire: 0 });
-    revalidateTag('fetch-accounts', { expire: 0 });
+    for (const tag of [
+      'fetch-transactions',
+      'fetch-accounts',
+      'fetch-analysis',
+    ]) {
+      revalidateTag(tag, { expire: 0 });
+    }
 
     return resData.data as string;
   } catch (error) {

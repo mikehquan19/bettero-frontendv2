@@ -16,7 +16,10 @@ export async function fetchAnalysisInfo(
       `${BASE_URL}/summary?start=${startDate}&end=${endDate}`,
       {
         method: 'GET',
-        next: { revalidate: 60 },
+        next: {
+          revalidate: 60 * 60,
+          tags: ['fetch-analysis'],
+        },
       },
     );
 
