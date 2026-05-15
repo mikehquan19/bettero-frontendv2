@@ -124,7 +124,6 @@ export default function TransactionContainer(props: ContainerProps) {
           severity: 'success',
         };
       }
-      router.refresh();
       setFormState({ open: false, type: formState.type });
     } catch (error) {
       state = {
@@ -147,7 +146,6 @@ export default function TransactionContainer(props: ContainerProps) {
 
     try {
       state.message = await deleteTransaction(currentId);
-      router.refresh();
       setDialogOpen(false);
     } catch (error) {
       state.message =

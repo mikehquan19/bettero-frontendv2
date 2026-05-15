@@ -32,6 +32,11 @@ function CollapseButton(props: {
   );
 }
 
+type transactionFetchKey = {
+  category: string;
+  offset: number;
+};
+
 export default function Analysis(props: { analysisData: AnalysisInfo }) {
   const [category, setCategory] = useState<string | null>(null);
   const [tableOpen, setTableOpen] = useState<boolean>(false);
@@ -43,10 +48,9 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   /**
    * Fetcher for client-fetching using useSWR
    */
-  async function transactionFetcher(key: {
-    category: string;
-    offset: number;
-  }): Promise<PaginatedData<Transaction[]>> {
+  async function transactionFetcher(
+    key: transactionFetchKey,
+  ): Promise<PaginatedData<Transaction[]>> {
     try {
       const [firstDate, lastDate] = getTime();
 
@@ -77,7 +81,9 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
 
   // Client-fetching the transactions of the given category of this month
   const { data, isValidating } = useSWR(
-    category ? { category, offset: transactionsOffset } : null,
+    category
+      ? ({ category, offset: transactionsOffset } as transactionFetchKey)
+      : null,
     transactionFetcher,
     {
       keepPreviousData: true, // To keep previous data while loading new one
@@ -99,7 +105,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     page: number,
   ) {
     const newOffset = page * PageLimit;
-    // If offset changes, useSWR should be able to re-fetch data
+    // If offset changes, useSWR should be able to re-fetch data because key changes
     setTransactionsOffset(newOffset);
   }
 

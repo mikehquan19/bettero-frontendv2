@@ -112,14 +112,14 @@ type SelectFieldProps = {
 
 /**
  * Select form field with basic validations, working any options.
- * The options can either be list of string or SelectOption.
- * When the option is any other types, transform it to SelectOption.
  */
 export function SelectField(props: SelectFieldProps) {
   function convertToOption(str: string) {
     return { label: str, value: str } as SelectOption;
   }
 
+  // The options can either be list of string or SelectOption.
+  // When the option is in string, transform it to SelectOption.
   let sortedOptions: SelectOption[] = [];
   if (props.options.length > 0) {
     sortedOptions =
@@ -138,9 +138,9 @@ export function SelectField(props: SelectFieldProps) {
   }
 
   function handleChangeField(e: SelectChangeEvent) {
-    const _error =
+    const error =
       e.target.value.trim().length === 0 ? `${props.label} required` : '';
-    props.onChange(e.target.value, _error);
+    props.onChange(e.target.value, error);
   }
 
   return (
@@ -168,7 +168,7 @@ export function SelectField(props: SelectFieldProps) {
         ))}
       </Select>
       {props.error.length > 0 && (
-        // Like defaultText in TextField
+        // Like defaultText in TextField component
         <Typography className="mt-1 ml-4 text-xs text-red-600">
           {props.error}
         </Typography>
@@ -216,11 +216,7 @@ type AccountFormProps = {
  */
 export default function AccountForm(props: AccountFormProps) {
   const [data, setData] = useState(
-    props.currentData ??
-      ({
-        ...defaultCreateAccountBody(),
-        type: props.accountType,
-      } as CreateAccountBody),
+    props.currentData ?? defaultCreateAccountBody(props.accountType),
   );
   const [error, setError] = useState(defaultCreateAccountError());
   const openBanner = useBanner();
@@ -228,22 +224,19 @@ export default function AccountForm(props: AccountFormProps) {
   // Reset the data and the error when closing or opening the form
   useEffect(() => {
     if (props.open) {
-      setData(
-        props.currentData ??
-          ({
-            ...defaultCreateAccountBody(),
-            type: props.accountType,
-          } as CreateAccountBody),
-      );
+      setData(props.currentData ?? defaultCreateAccountBody(props.accountType));
       setError(defaultCreateAccountError());
     }
   }, [props.open, props.currentData]);
 
+  /**
+   * Do the last round of the validating and then submit the data
+   */
   function handleSubmit() {
     let canSubmit = true;
     Object.keys(data).forEach((key) => {
       if (
-        // Since CreateAccountBody and CreateAccountError share identical fields,
+        // CreateAccountBody and CreateAccountError share identical fields,
         // check both simultaneously
         data[key as keyof CreateAccountBody] === '' ||
         error[key as keyof CreateAccountError] !== ''
@@ -264,7 +257,8 @@ export default function AccountForm(props: AccountFormProps) {
 
   function setField(field: string, value: string, _error: string) {
     if (!(field in data && field in error)) {
-      // Internal error, rechecking the field naming when this happens
+      // Internal error.
+      // Recheck the field naming when this happens
       throw new Error('Invalid field, not in data or error: ' + field);
     }
     setData({ ...data, [field]: value });
