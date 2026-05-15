@@ -74,6 +74,7 @@ export default function CardWrapper(props: {
               message: `${created.acc_name} created successfully!`,
               severity: 'success',
             };
+            setFormOpen(false); // Close the form
           } catch (error) {
             state = {
               message:
