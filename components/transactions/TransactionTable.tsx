@@ -75,8 +75,7 @@ function TransactionSearchBar() {
   );
 
   useEffect(() => {
-    // Keep the current options until new ones have been loaded,
-    // avoid flickering
+    // Keep the current options until new ones have been loaded, avoid flickering
     if (keyword.length > 0) {
       // When the options have been fetched and validated, use them
       if (!isValidating && data !== undefined) {
@@ -94,15 +93,13 @@ function TransactionSearchBar() {
         freeSolo
         autoHighlight
         options={descriptions}
-        // Control the keyword
-        inputValue={keyword}
+        inputValue={keyword} // Control the keyword
         slotProps={{
           paper: {
             className: 'bg-blue-100 rounded-b-lg rounded-t-none',
           },
         }}
-        // Somehow if we don't do this, it will filter by keyword matching
-        filterOptions={(options) => options}
+        filterOptions={(options) => options} // If we don't do this, it will filter
         getOptionLabel={(option: string | Suggestion) => {
           // The options should always be Suggestion instead of string
           // MUI's type safety
@@ -116,8 +113,7 @@ function TransactionSearchBar() {
           const optionType =
             typeof option === 'string'
               ? null
-              : // Capitalize
-                option.type.charAt(0).toUpperCase() + option.type.slice(1);
+              : option.type.charAt(0).toUpperCase() + option.type.slice(1); // Capitalize
           return (
             // Render the suggestion along with its option field
             <Box key={key} component="li" {...optionProps}>
@@ -153,7 +149,7 @@ function TransactionSearchBar() {
         ) => {
           e.preventDefault();
           setKeyword(value);
-          if (reason === 'clear') {
+          if (reason === 'clear' && searchTransactions) {
             // Clear the input, reset the transactions data.
             // Value is technically empty
             searchTransactions('description', value);
@@ -165,14 +161,15 @@ function TransactionSearchBar() {
         ) => {
           e.preventDefault();
           if (!value || typeof value === 'string') {
-            // Options should always be defined suggestions
-            // MUI's safety
+            // Options should always be defined suggestions MUI's safety
             return;
           }
-          searchTransactions(
-            value.type as 'merchant' | 'description',
-            value.name,
-          );
+          if (searchTransactions) {
+            searchTransactions(
+              value.type as 'merchant' | 'description',
+              value.name,
+            );
+          }
         }}
       />
       <Tooltip title="Search">
@@ -185,10 +182,12 @@ function TransactionSearchBar() {
             // search for first one on click
             if (descriptions.length > 0) {
               setKeyword(descriptions[0].name);
-              searchTransactions(
-                descriptions[0].type as 'merchant' | 'description',
-                descriptions[0].name,
-              );
+              if (searchTransactions) {
+                searchTransactions(
+                  descriptions[0].type as 'merchant' | 'description',
+                  descriptions[0].name,
+                );
+              }
             }
           }}
         >
@@ -339,7 +338,7 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
           open={Boolean(anchorEl)}
           onClose={() => setAnchorEl(null)}
           onChooseUpdate={() => {
-            if (selectedTransaction) {
+            if (selectedTransaction && chooseUpdate) {
               chooseUpdate(
                 selectedTransaction.id,
                 convertToCreateBody(selectedTransaction),
@@ -348,7 +347,7 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
             setAnchorEl(null);
           }}
           onChooseDelete={() => {
-            if (selectedTransaction) {
+            if (selectedTransaction && chooseDelete) {
               chooseDelete(selectedTransaction.id);
             }
             setAnchorEl(null);
@@ -450,7 +449,12 @@ export default function TransactionTable(props: {
         <Stack direction="row" className="justify-center mt-2">
           <Tooltip title="Add transaction">
             <IconButton id="add-transaction">
-              <AddCircleIcon fontSize="large" onClick={chooseCreate} />
+              <AddCircleIcon
+                fontSize="large"
+                onClick={() => {
+                  if (chooseCreate) chooseCreate();
+                }}
+              />
             </IconButton>
           </Tooltip>
         </Stack>

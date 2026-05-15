@@ -17,18 +17,19 @@ import { BannerState, useBanner } from '../snackbar/BannerProvider';
 
 type TransactionActionContextProps = {
   allowActions: boolean;
-  chooseCreate: () => void;
-  chooseUpdate: (id: number, data: CreateTransactionBody) => void;
-  chooseDelete: (id: number) => void;
-  searchTransactions: (key: 'merchant' | 'description', value: string) => void;
+  chooseCreate: (() => void) | null;
+  chooseUpdate: ((id: number, data: CreateTransactionBody) => void) | null;
+  chooseDelete: ((id: number) => void) | null;
+  searchTransactions:
+    | ((key: 'merchant' | 'description', value: string) => void)
+    | null;
 };
 const TransactionActionsContext = createContext<TransactionActionContextProps>({
-  // Dummy functions
   allowActions: false,
-  chooseCreate: () => {},
-  chooseUpdate: (id, data) => {},
-  chooseDelete: (id) => {},
-  searchTransactions: (key, value) => {},
+  chooseCreate: null,
+  chooseUpdate: null,
+  chooseDelete: null,
+  searchTransactions: null,
 });
 
 /**
