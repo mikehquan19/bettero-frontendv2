@@ -12,18 +12,18 @@ import { getTime } from '@/lib/time';
 export default async function Home(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const searchParams = await props.searchParams;
-  const merchant = searchParams.merchant
-    ? typeof searchParams.merchant === 'string'
-      ? searchParams.merchant
-      : searchParams.merchant[0]
+  const params = await props.searchParams;
+  const merchant = params.merchant
+    ? typeof params.merchant === 'string'
+      ? params.merchant
+      : params.merchant[0]
     : undefined;
-  const description = searchParams.description
-    ? typeof searchParams.description === 'string'
-      ? searchParams.description
-      : searchParams.description[0]
+  const description = params.description
+    ? typeof params.description === 'string'
+      ? params.description
+      : params.description[0]
     : undefined;
-  const offset = Number(searchParams.offset ?? '0');
+  const offset = Number(params.offset ?? '0');
 
   // To get analysis of this month
   const [firstDate, lastDate] = getTime();
@@ -62,8 +62,12 @@ export default async function Home(props: {
       </>
     );
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown reasons';
-    return <PageError errorMessage={errorMessage} />;
+    return (
+      <PageError
+        errorMessage={
+          error instanceof Error ? error.message : 'Unknown reasons'
+        }
+      />
+    );
   }
 }

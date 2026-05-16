@@ -33,7 +33,7 @@ export default function CardWrapper(props: {
           <Tooltip title="See details">
             <IconButton
               id="See details"
-              onClick={() => router.push('/accounts')}
+              onClick={() => router.push(`/accounts?type=${type}`)}
             >
               <ArrowForwardIcon />
             </IconButton>
@@ -55,7 +55,10 @@ export default function CardWrapper(props: {
       </Box>
       <Stack direction="row" className="justify-center mt-1">
         <Tooltip title={`Add ${type} card`}>
-          <IconButton onClick={() => setFormOpen(true)}>
+          <IconButton
+            data-cy="add-account-btn"
+            onClick={() => setFormOpen(true)}
+          >
             <AddCircleIcon fontSize="large" />
           </IconButton>
         </Tooltip>

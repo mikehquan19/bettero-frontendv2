@@ -287,7 +287,7 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
   return (
     <TableBody>
       {props.transactions.map((transaction) => (
-        <TableRow key={transaction.id} hover>
+        <TableRow data-cy="transaction-row" key={transaction.id} hover>
           <TableCell>
             <Typography>
               {transaction.account.institution}'s {transaction.account.acc_name}

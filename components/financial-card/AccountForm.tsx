@@ -267,6 +267,7 @@ export default function AccountForm(props: AccountFormProps) {
 
   return (
     <Dialog
+      data-cy="account-form"
       open={props.open}
       onClose={props.onClose}
       slotProps={{

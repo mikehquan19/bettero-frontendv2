@@ -7,7 +7,9 @@ import { Account } from '@/interface';
 export default function FinancialCard(props: { account: Account }) {
   const account = props.account;
 
-  /** Show only the last 4 digits of the 16-digit account number */
+  /**
+   * Show only the last 4 digits of the 16-digit account number
+   */
   function hideAccNumber(accNumber: number): number {
     return accNumber % 10000;
   }
@@ -19,11 +21,17 @@ export default function FinancialCard(props: { account: Account }) {
     return '';
   }
 
+  const bank = account.institution;
+  const bg = bankToTheme[bank].background;
+  const text = bankToTheme[bank].primary;
+
+  // Each card also has data-cy tag used for testing
+  const dataCyTag = `${account.type.toLowerCase()}-card`;
+
   return (
     <Card
-      className={`rounded-xl min-w-[340] min-h-[220] ${
-        bankToTheme[account.institution].background
-      } ${bankToTheme[account.institution].primary}`}
+      data-cy={dataCyTag}
+      className={`rounded-xl min-w-[340] min-h-[220] ${bg} ${text}`}
     >
       <CardContent className="h-full">
         <Stack className="h-full justify-between">

@@ -95,6 +95,7 @@ export default function TransactionForm(props: TransactionFormProps) {
 
   return (
     <Dialog
+      data-cy="transaction-form"
       open={props.open}
       onClose={props.onClose}
       slotProps={{
