@@ -106,7 +106,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         {props.type === 'CREATE' && (
           <Grid size={{ xs: 12, md: 6 }}>
             <SelectField
-              dataCy="account-field"
+              dataCy="account"
               label="Account"
               options={accountOptions}
               value={data.account_id}
@@ -117,7 +117,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         )}
         <Grid size={{ xs: 12, md: 6 }}>
           <ValidatedTextField
-            dataCy="merchant-field"
+            dataCy="merchant"
             label="Merchant"
             value={data.merchant}
             error={error.merchant}
@@ -126,7 +126,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <ValidatedTextField
-            dataCy="description-field"
+            dataCy="description"
             label="Description"
             value={data.tran_description}
             error={error.tran_description}
@@ -137,7 +137,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <SelectField
-            dataCy="category-field"
+            dataCy="category"
             label="Category"
             options={categories}
             value={data.category}
@@ -147,7 +147,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <ValidatedNumberField
-            dataCy="amount-field"
+            dataCy="amount"
             label="Amount"
             value={data.amount}
             error={error.amount}
@@ -156,7 +156,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <DateTimeField
-            dataCy="created-date-field"
+            dataCy="created-date"
             label="Created date"
             value={data.created_at}
             onChange={(value) => setField('created_at', value, '')}

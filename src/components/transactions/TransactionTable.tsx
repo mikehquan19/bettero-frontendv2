@@ -86,6 +86,10 @@ function TransactionSearchBar() {
     }
   }, [keyword, data, isValidating]);
 
+  function capitalize(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
   return (
     <div className="flex flex-row">
       <Autocomplete
@@ -96,7 +100,7 @@ function TransactionSearchBar() {
         inputValue={keyword} // Control the keyword
         slotProps={{
           paper: {
-            className: 'bg-blue-100 rounded-b-lg rounded-t-none',
+            className: 'rounded-lg',
           },
         }}
         filterOptions={(options) => options} // If we don't do this, it will filter
@@ -111,19 +115,17 @@ function TransactionSearchBar() {
         renderOption={(props, option: string | Suggestion) => {
           const { key, ...optionProps } = props;
           const optionType =
-            typeof option === 'string'
-              ? null
-              : option.type.charAt(0).toUpperCase() + option.type.slice(1); // Capitalize
+            typeof option === 'string' ? null : capitalize(option.type);
           return (
             // Render the suggestion along with its option field
             <Box key={key} component="li" {...optionProps}>
               <Stack direction="column">
                 {optionType !== null && (
-                  <Typography className="text-xs text-gray-500">
+                  <Typography id="type" className="text-xs text-gray-500">
                     {optionType}
                   </Typography>
                 )}
-                <Typography>
+                <Typography id="value">
                   {typeof option === 'string' ? option : option.name}
                 </Typography>
               </Stack>
@@ -133,11 +135,13 @@ function TransactionSearchBar() {
         renderInput={(params) => (
           <TextField
             {...params}
+            data-cy="tran-search-bar"
             label="Search with keyword"
             sx={{
               width: '250px',
               '& .MuiOutlinedInput-root': {
                 borderRadius: '8px 0 0 8px',
+                backgroundColor: '#f3f4f6',
               },
             }}
           />
@@ -172,8 +176,9 @@ function TransactionSearchBar() {
           }
         }}
       />
-      <Tooltip title="Search">
+      <Tooltip title="Search for transactions">
         <Button
+          data-cy="tran-search-btn"
           disableElevation
           className="rounded-r-lg rounded-l-none"
           variant="contained"
@@ -412,7 +417,7 @@ export default function TransactionTable(props: {
       <Paper className="bg-blue-200 rounded-xl">
         <Stack
           direction="row"
-          className="bg-gray-400 text-white rounded-t-xl p-3 items-center justify-between"
+          className="bg-blue-900 text-white rounded-t-xl p-3 items-center justify-between"
         >
           <Typography variant="h6" className="font-bold">
             List of transactions ({props.paginatedTransactions.total}):

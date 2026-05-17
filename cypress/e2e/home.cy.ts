@@ -5,6 +5,8 @@ describe('Home', () => {
 
   it('Shows the analytics', () => {
     cy.contains('Spending analysis this month');
+
+    // Click on the category part of the chart and expands the table
   });
 
   it('Renders list of accounts', () => {
@@ -36,7 +38,7 @@ describe('Home', () => {
 
     ['debit', 'credit'].forEach((type: string, idx: number) => {
       // Click See details button
-      cy.get('[id="See details').eq(idx).click();
+      cy.get('[id="See details"]').eq(idx).click();
       cy.url().should('include', `/accounts?type=${type}`);
       cy.wait(1000);
 
@@ -60,17 +62,16 @@ describe('Home', () => {
           .within(() => {
             // Check if the correct form pops up
             cy.contains(`CREATE ${['DEBIT', 'CREDIT'][idx]} ACCOUNTS`);
-          });
-        cy.wait(1500);
-
-        cy.dataCy('account-form').tapOutsideComponent();
+          })
+          .wait(1500)
+          .tapOutside();
       },
     );
   });
 
   it('Fill out the debit account form and submit', () => {
     // Open the debit account form
-    cy.dataCy('add-account-btn').eq(0).click();
+    cy.dataCy('add-account-btn').first().click();
 
     // Submit without filling out anything
     cy.get('[type="submit"]').should('be.visible').click();
@@ -104,7 +105,7 @@ describe('Home', () => {
     cy.contains(`${data['account-name']} created successfully!`);
     // First debit card is created one
     cy.get('debit-card')
-      .eq(0)
+      .first()
       .within(() => {
         Object.values(data).forEach((value) => {
           cy.contains(value);
@@ -123,16 +124,44 @@ describe('Home', () => {
 
       // Click the actions button
       cy.get('[id="see-actions"]').eq(idx).click();
-      cy.get('[id="transaction-actions"]').should('be.visible');
-      cy.wait(1500);
-
-      cy.get('[id="transaction-actions"]').tapOutsideComponent();
+      cy.get('[id="transaction-actions"]')
+        .should('be.visible')
+        .wait(1500)
+        .tapOutside();
     }
   });
 
-  it('Choose update transaction for the first account', () => {
+  it('Search for transactions in the search bar', () => {
+    // Type keyword to the search bar
+    cy.dataCy('tran-search-bar')
+      .should('be.visible')
+      .type('payment')
+      .wait(1500);
+
+    cy.get('[role="option"]')
+      .should('have.length.gt', 0)
+      .first()
+      .then((el1: JQuery<HTMLElement>) => {
+        const type = el1.find('[id="type"]').text().toLowerCase();
+        const value = el1.find('[id="value"]').text();
+        cy.log(`Option: ${type}, ${value}`);
+
+        // Choose first option
+        cy.dataCy('tran-search-btn').click().wait(1500);
+        cy.url().should('include', `?${type}=`);
+        cy.dataCy('transaction-row').each((el2) => {
+          cy.wrap(el2).contains(value);
+        });
+
+        // Clear the keyword
+        cy.get('[aria-label="Clear"]').click({ force: true }).wait(1500);
+        cy.url().should('not.include', `?${type}=`);
+      });
+  });
+
+  it('Choose update transaction for the first row', () => {
     // Click actions button
-    cy.get('[id="see-actions"]').eq(0).click();
+    cy.get('[id="see-actions"]').first().click();
     cy.wait(500);
 
     // Click Update
@@ -143,20 +172,35 @@ describe('Home', () => {
         cy.contains('UPDATE TRANSACTIONS');
       });
 
-    // TODO: Check if the data rendered on the form is same as table
+    // Test if the data on form matches row
+    const fields = ['merchant', 'description', 'category', 'amount'];
+    for (const field of fields) {
+      cy.dataCy(field)
+        .find('input')
+        .invoke('val')
+        .then((val) => {
+          assert(val !== undefined);
+          const str =
+            typeof val! === 'string' || typeof val! === 'number'
+              ? String(val!)
+              : val![0];
+          cy.dataCy('transaction-row').first().contains(str);
+          cy.log(`${field}: ${val}`);
+        });
+    }
     cy.wait(1500);
 
-    cy.dataCy('transaction-form').tapOutsideComponent();
+    cy.dataCy('transaction-form').tapOutside();
   });
 
-  it('Choose delete transaction', () => {
-    cy.get('[id="see-actions"]').eq(0).click();
+  it('Choose delete transaction for the first row', () => {
+    cy.get('[id="see-actions"]').first().click();
     cy.wait(500);
 
     cy.contains('Delete').click({ force: true });
-    cy.dataCy('delete-transaction').should('be.visible');
-    cy.wait(1500);
-
-    cy.dataCy('delete-transaction').tapOutsideComponent();
+    cy.dataCy('delete-transaction')
+      .should('be.visible')
+      .wait(1500)
+      .tapOutside();
   });
 });

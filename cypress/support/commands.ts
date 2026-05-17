@@ -36,10 +36,10 @@ declare global {
       ): Chainable<JQuery<HTMLElement>>;
 
       /**
-       * Tap at random place outside the pop-up component
-       * and wait for 1.5 seconds
+       * Tap at random place outside the pop-up component and wait for 1 second.
+       * Used as a chain following the the another command
        */
-      tapOutsideComponent(): Chainable<void>;
+      tapOutside(): Chainable<void>;
     }
   }
 }
@@ -51,9 +51,9 @@ Cypress.Commands.add('dataCy', (selector: string, options) => {
 
 // Tap at random place outside the pop-up component and wait for 1 second
 Cypress.Commands.add(
-  'tapOutsideComponent',
+  'tapOutside',
   { prevSubject: 'element' },
-  (subject) => {
+  (subject: Cypress.JQueryWithSelector<HTMLElement>) => {
     cy.wrap(subject).then((element) => {
       // Get component's bounds
       const component = element[0].getBoundingClientRect();
@@ -66,7 +66,8 @@ Cypress.Commands.add(
         // Default values, just click at the top left corner
         let randX = 0;
         let randY = 0;
-        for (let idx = 0; idx < 50; idx++) {
+        // After 100 attempts, if it's still in, then just tap at corner
+        for (let idx = 0; idx < 100; idx++) {
           randX = Math.floor(Math.random() * w);
           randY = Math.floor(Math.random() * h);
 
