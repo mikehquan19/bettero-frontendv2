@@ -6,7 +6,6 @@ import { Box, Stack, Typography, Button } from '@mui/material';
 
 export default function Navbar() {
   const pathname = usePathname();
-
   const navItems = [
     { name: 'Home', href: '/' },
     { name: 'Accounts', href: '/accounts' },

@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  Dialog,
-  DialogActions,
-  DialogTitle,
-  Grid,
-} from '@mui/material';
+import { Dialog, DialogActions, DialogTitle, Grid } from '@mui/material';
 import { useEffect, useState } from 'react';
 import {
   Account,

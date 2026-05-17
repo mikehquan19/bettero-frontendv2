@@ -1,4 +1,4 @@
-export function getTime() {
+export function getThisMonthDates() {
   const date = new Date();
   const firstDate = new Date(date.getFullYear(), date.getMonth(), 1)
     .toISOString()

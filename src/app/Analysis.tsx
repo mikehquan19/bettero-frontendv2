@@ -8,7 +8,7 @@ import { AnalysisInfo, PaginatedData, Transaction } from '@interface';
 import useSWR from 'swr';
 import { useState, useEffect, MouseEvent } from 'react';
 import { BASE_URL, PageLimit } from '@constant';
-import { getTime } from '@lib/time';
+import { getThisMonthDates } from '@lib/time';
 
 /**
  * Button to close the collapse
@@ -52,7 +52,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     key: transactionFetchKey,
   ): Promise<PaginatedData<Transaction[]>> {
     try {
-      const [firstDate, lastDate] = getTime();
+      const [firstDate, lastDate] = getThisMonthDates();
 
       let url = `${BASE_URL}/transactions?`;
       url += `category=${key.category}&start=${firstDate}&end=${lastDate}&offset=${key.offset}`;

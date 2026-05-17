@@ -7,7 +7,7 @@ import PageError from './pageError';
 import { fetchAnalysisInfo } from '@lib/fetchAnalysisInfo';
 import Analysis from '@app/Analysis';
 import TransactionContainer from '@components/transactions/TransactionContainer';
-import { getTime } from '@lib/time';
+import { getThisMonthDates } from '@lib/time';
 
 export default async function Home(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -26,7 +26,7 @@ export default async function Home(props: {
   const offset = Number(params.offset ?? '0');
 
   // To get analysis of this month
-  const [firstDate, lastDate] = getTime();
+  const [firstDate, lastDate] = getThisMonthDates();
 
   try {
     const [analysisData, accounts, paginatedTrans] = await Promise.all([
