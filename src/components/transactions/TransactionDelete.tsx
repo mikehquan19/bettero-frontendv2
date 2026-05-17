@@ -14,6 +14,7 @@ export default function TransactionDelete(props: {
 }) {
   return (
     <Dialog
+      data-cy="delete-transaction"
       open={props.open}
       onClose={props.onClose}
       slotProps={{
