@@ -1,14 +1,14 @@
 'use client';
 
 import { Typography, Stack, Collapse, Button, Tooltip } from '@mui/material';
-import ExpenseChange from '@/src/components/charts/ExpenseChange';
-import ExpenseComposition from '@/src/components/charts/ExpenseComposition';
-import TransactionTable from '@/src/components/transactions/TransactionTable';
-import { AnalysisInfo, PaginatedData, Transaction } from '@/src/interface';
+import ExpenseChange from '@components/charts/ExpenseChange';
+import ExpenseComposition from '@components/charts/ExpenseComposition';
+import TransactionTable from '@components/transactions/TransactionTable';
+import { AnalysisInfo, PaginatedData, Transaction } from '@interface';
 import useSWR from 'swr';
 import { useState, useEffect, MouseEvent } from 'react';
-import { BASE_URL, PageLimit } from '@/src/constant';
-import { getTime } from '@/src/lib/time';
+import { BASE_URL, PageLimit } from '@constant';
+import { getTime } from '@lib/time';
 
 /**
  * Button to close the collapse

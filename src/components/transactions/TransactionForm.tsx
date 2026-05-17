@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogTitle,
@@ -14,8 +13,8 @@ import {
   defaultCreateTransactionBody,
   defaultTransactionFormError,
   TransactionFormError,
-} from '@/src/interface';
-import { categories } from '@/src/constant';
+} from '@interface';
+import { categories } from '@constant';
 import { BannerState, useBanner } from '../snackbar/BannerProvider';
 import {
   SelectOption,

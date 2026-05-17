@@ -30,8 +30,8 @@ import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SearchIcon from '@mui/icons-material/Search';
 import { MouseEvent, SyntheticEvent, useEffect, useState } from 'react';
-import { PaginatedData, Transaction, CreateTransactionBody } from '@/src/interface';
-import { PageLimit, BASE_URL } from '@/src/constant';
+import { PaginatedData, Transaction, CreateTransactionBody } from '@interface';
+import { PageLimit, BASE_URL } from '@constant';
 import { useTransactionActions } from './TransactionContainer';
 import useSWR from 'swr';
 

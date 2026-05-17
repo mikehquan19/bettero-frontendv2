@@ -1,10 +1,10 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Account, PaginatedData, Transaction } from '@/src/interface';
-import { PageLimit } from '@/src/constant';
+import { Account, PaginatedData, Transaction } from '@interface';
+import { PageLimit } from '@constant';
 import { createContext, useContext, useState } from 'react';
-import { CreateTransactionBody, UpdateTransactionBody } from '@/src/interface';
+import { CreateTransactionBody, UpdateTransactionBody } from '@interface';
 import TransactionTable from './TransactionTable';
 import TransactionForm from './TransactionForm';
 import TransactionDelete from './TransactionDelete';
@@ -12,7 +12,7 @@ import {
   createTransaction,
   deleteTransaction,
   updateTransaction,
-} from '@/src/lib/fetchTransactions';
+} from '@lib/fetchTransactions';
 import { BannerState, useBanner } from '../snackbar/BannerProvider';
 
 type TransactionActionContextProps = {

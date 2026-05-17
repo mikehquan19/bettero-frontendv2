@@ -1,6 +1,6 @@
 'use client';
 
-import { Account, AccountAnalysisInfo } from '@/src/interface';
+import { Account, AccountAnalysisInfo } from '@interface';
 
 export default function DetailedFinancialCard(props: {
   account: Account;

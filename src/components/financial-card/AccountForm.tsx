@@ -24,8 +24,8 @@ import {
   CreateAccountError,
   defaultCreateAccountBody,
   defaultCreateAccountError,
-} from '@/src/interface';
-import { Institutions } from '@/src/constant';
+} from '@interface';
+import { Institutions } from '@constant';
 import dayjs from 'dayjs';
 import { BannerState, useBanner } from '../snackbar/BannerProvider';
 

@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Box } from '@mui/material';
-import { CategoryInfo } from '@/src/interface';
+import { CategoryInfo } from '@interface';
 
 ChartJS.register(
   CategoryScale,

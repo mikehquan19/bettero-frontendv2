@@ -6,9 +6,9 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { ReactNode, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AccountForm from './AccountForm';
-import { CreateAccountBody } from '@/src/interface';
+import { CreateAccountBody } from '@interface';
 import { BannerState, useBanner } from '../snackbar/BannerProvider';
-import { createAccount } from '@/src/lib/fetchAccounts';
+import { createAccount } from '@lib/fetchAccounts';
 
 export default function CardWrapper(props: {
   type: 'Debit' | 'Credit';

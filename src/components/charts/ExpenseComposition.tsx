@@ -1,6 +1,6 @@
 'use client';
 
-import { CategoryInfo } from '@/src/interface';
+import { CategoryInfo } from '@interface';
 import { Box } from '@mui/material';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie, getElementAtEvent } from 'react-chartjs-2';

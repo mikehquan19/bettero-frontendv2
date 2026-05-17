@@ -1,7 +1,7 @@
 'use server';
 
-import { Account, CreateAccountBody } from '@/src/interface';
-import { BASE_URL } from '@/src/constant';
+import { Account, CreateAccountBody } from '@interface';
+import { BASE_URL } from '@constant';
 import { revalidateTag } from 'next/cache';
 
 /**

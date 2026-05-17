@@ -2,7 +2,7 @@
 
 import { Card, CardContent, Stack, Box, Typography } from '@mui/material';
 import bankToTheme from './bankToTheme';
-import { Account } from '@/src/interface';
+import { Account } from '@interface';
 
 export default function FinancialCard(props: { account: Account }) {
   const account = props.account;

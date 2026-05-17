@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import Navbar from '@/src/components/navbar/Navbar';
+import Navbar from '@components/navbar/Navbar';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import './globals.css';
-import BannerProvider from '@/src/components/snackbar/BannerProvider';
+import BannerProvider from '@components/snackbar/BannerProvider';
 
 export const metadata: Metadata = {
   title: 'Bettero App',

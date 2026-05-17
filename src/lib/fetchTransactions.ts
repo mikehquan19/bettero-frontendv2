@@ -1,8 +1,8 @@
 'use server';
 
-import { PaginatedData, Transaction } from '@/src/interface';
-import { BASE_URL } from '@/src/constant';
-import { CreateTransactionBody, UpdateTransactionBody } from '@/src/interface';
+import { PaginatedData, Transaction } from '@interface';
+import { BASE_URL } from '@constant';
+import { CreateTransactionBody, UpdateTransactionBody } from '@interface';
 import { revalidateTag } from 'next/cache';
 
 /**

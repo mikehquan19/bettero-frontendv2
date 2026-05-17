@@ -1,13 +1,13 @@
-import FinancialCard from '@/src/components/financial-card/FinancialCard';
-import CardWrapper from '@/src/components/financial-card/CardWrapper';
+import FinancialCard from '@components/financial-card/FinancialCard';
+import CardWrapper from '@components/financial-card/CardWrapper';
 import { Stack } from '@mui/material';
-import { fetchTransactions } from '@/src/lib/fetchTransactions';
-import { fetchAccounts } from '@/src/lib/fetchAccounts';
+import { fetchTransactions } from '@lib/fetchTransactions';
+import { fetchAccounts } from '@lib/fetchAccounts';
 import PageError from './pageError';
-import { fetchAnalysisInfo } from '@/src/lib/fetchAnalysisInfo';
-import Analysis from '@/app/Analysis';
-import TransactionContainer from '@/src/components/transactions/TransactionContainer';
-import { getTime } from '@/src/lib/time';
+import { fetchAnalysisInfo } from '@lib/fetchAnalysisInfo';
+import Analysis from '@app/Analysis';
+import TransactionContainer from '@components/transactions/TransactionContainer';
+import { getTime } from '@lib/time';
 
 export default async function Home(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
