@@ -4,7 +4,7 @@ import { CategoryInfo } from '@interface';
 import { Box } from '@mui/material';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie, getElementAtEvent } from 'react-chartjs-2';
-import { MouseEvent, useRef } from 'react';
+import { MouseEvent, useEffect, useRef } from 'react';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -14,13 +14,21 @@ export default function ExpenseComposition(props: {
 }) {
   const chartRef = useRef<ChartJS<'pie'> | null>(null);
 
+  useEffect(() => {
+    // Expose chart instance for Cypress E2E.
+    // Avoid relying on global registry or DOM parsing.
+    if (window.Cypress) {
+      (window as any).__expenseCompositionChart = chartRef.current;
+    }
+  }, []);
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       title: {
         display: true,
-        text: 'Composition percentage this month',
+        text: ['Composition percentage this month'],
         font: {
           size: 20,
           weight: 'bold' as const,
@@ -73,7 +81,13 @@ export default function ExpenseComposition(props: {
 
   return (
     <Box className="w-full h-[420]">
-      <Pie ref={chartRef} options={options} data={data} onClick={handleClick} />
+      <Pie
+        data-cy="expense-composition-chart"
+        ref={chartRef}
+        options={options}
+        data={data}
+        onClick={handleClick}
+      />
     </Box>
   );
 }

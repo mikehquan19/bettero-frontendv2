@@ -14,7 +14,7 @@ export default function Navbar() {
   ];
 
   return (
-    <Box className="w-[160] h-[100vh] fixed bg-gray-400 text-white p-2 text-center">
+    <Box className="w-[160] h-[100vh] fixed bg-blue-900 text-white p-2 text-center">
       <Typography variant="h6" fontWeight="bold">
         <Link href="/" className="no-underline text-inherit">
           Bettero App

@@ -21,6 +21,7 @@ function CollapseButton(props: {
     <div className={props.className}>
       <Tooltip title="Hide the table">
         <Button
+          data-cy="collapse-category-tran-btn"
           variant="contained"
           className="bg-gray-400 font-bold rounded-lg"
           onClick={() => props.onClick()}
@@ -129,10 +130,12 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
 
         {/* Collapsible transaction table */}
         <Collapse className="mt-8" in={tableOpen} timeout="auto" unmountOnExit>
-          <TransactionTable
-            paginatedTransactions={data!}
-            onPageChange={handlePageChange}
-          />
+          <div data-cy="category-tran-table">
+            <TransactionTable
+              paginatedTransactions={data!}
+              onPageChange={handlePageChange}
+            />
+          </div>
           <CollapseButton
             className="mt-2 flex flex-row justify-center"
             onClick={() => setCategory(null)}

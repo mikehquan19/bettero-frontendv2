@@ -455,6 +455,7 @@ export default function TransactionTable(props: {
           <Tooltip title="Add transaction">
             <IconButton id="add-transaction">
               <AddCircleIcon
+                data-cy="add-transaction-btn"
                 fontSize="large"
                 onClick={() => {
                   if (chooseCreate) chooseCreate();
