@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogActions, DialogTitle, Grid } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Account,
   CreateTransactionBody,
@@ -48,14 +48,6 @@ export default function TransactionForm(props: TransactionFormProps) {
         value: String(a.id),
       }) as SelectOption,
   );
-
-  // Reset the data and the error of the form when opening or closing the form
-  useEffect(() => {
-    if (props.open) {
-      setData(props.currentData ?? defaultCreateTransactionBody());
-      setError(defaultTransactionFormError());
-    }
-  }, [props.open, props.currentData]);
 
   function handleSubmit() {
     let canSubmit = true;

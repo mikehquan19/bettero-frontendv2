@@ -194,6 +194,15 @@ export default function TransactionContainer(props: ContainerProps) {
         onPageChange={handlePageChange}
       />
       <TransactionForm
+        key={
+          formState.open
+            ? formState.type === 'CREATE'
+              ? 'transaction-form-new'
+              : `transaction-form-${
+                  currentData ? JSON.stringify(currentData) : 'update'
+                }`
+            : 'transaction-form-closed'
+        }
         type={formState.type as 'CREATE' | 'UPDATE'}
         open={formState.open}
         currentData={formState.type === 'CREATE' ? null : currentData}

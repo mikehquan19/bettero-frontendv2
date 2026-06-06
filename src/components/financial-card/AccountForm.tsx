@@ -18,7 +18,7 @@ import { PickerValue } from '@mui/x-date-pickers/internals';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import {
   CreateAccountBody,
   CreateAccountError,
@@ -169,7 +169,9 @@ export function SelectField(props: SelectFieldProps) {
         }}
       >
         {sortedOptions.map((option) => (
-          <MenuItem value={option.value}>{option.label}</MenuItem>
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
         ))}
       </Select>
       {props.error.length > 0 && (
@@ -242,13 +244,9 @@ export default function AccountForm(props: AccountFormProps) {
   const [error, setError] = useState(defaultCreateAccountError());
   const openBanner = useBanner();
 
-  // Reset the data and the error when closing or opening the form
-  useEffect(() => {
-    if (props.open) {
-      setData(props.currentData ?? defaultCreateAccountBody(props.accountType));
-      setError(defaultCreateAccountError());
-    }
-  }, [props.open, props.currentData]);
+  const dialogKey = props.open
+    ? `account-form-open-${props.currentData?.acc_number ?? 'new'}`
+    : 'account-form-closed';
 
   /**
    * Do the last round of the validating and then submit the data
@@ -288,6 +286,7 @@ export default function AccountForm(props: AccountFormProps) {
 
   return (
     <Dialog
+      key={dialogKey}
       data-cy="account-form"
       open={props.open}
       onClose={props.onClose}

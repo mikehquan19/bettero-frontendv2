@@ -22,7 +22,7 @@ export default function CardWrapper(props: {
   const type = props.type.toLocaleLowerCase();
   return (
     <>
-      <Box className="rounded-xl shadow-lg bg-blue-200">
+      <Box className="rounded-xl shadow-lg bg-blue-300">
         <Stack
           direction="row"
           className="bg-gray-400 text-white rounded-t-xl justify-between items-center p-2"

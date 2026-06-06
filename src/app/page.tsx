@@ -8,6 +8,7 @@ import { fetchAnalysisInfo } from '@lib/fetchAnalysisInfo';
 import Analysis from '@app/Analysis';
 import TransactionContainer from '@components/transactions/TransactionContainer';
 import { getThisMonthDates } from '@lib/time';
+import { Account, AnalysisInfo, PaginatedData, Transaction } from '@interface';
 
 export default async function Home(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -25,42 +26,16 @@ export default async function Home(props: {
     : undefined;
   const offset = Number(params.offset ?? '0');
 
-  // To get analysis of this month
   const [firstDate, lastDate] = getThisMonthDates();
-
+  let analysisData: AnalysisInfo;
+  let accounts: Account[];
+  let paginatedTrans: PaginatedData<Transaction[]>;
   try {
-    const [analysisData, accounts, paginatedTrans] = await Promise.all([
+    [analysisData, accounts, paginatedTrans] = await Promise.all([
       fetchAnalysisInfo(firstDate, lastDate),
       fetchAccounts(),
       fetchTransactions(merchant, description, offset),
     ]);
-
-    const credit = accounts.filter((acc) => acc.type === 'Credit');
-    const debit = accounts.filter((acc) => acc.type === 'Debit');
-
-    return (
-      <>
-        <Analysis analysisData={analysisData} />
-
-        <Stack className="my-4" spacing={1}>
-          <CardWrapper type="Debit" numAccounts={debit.length}>
-            {debit.map((acc) => (
-              <FinancialCard key={acc.id} account={acc} />
-            ))}
-          </CardWrapper>
-          <CardWrapper type="Credit" numAccounts={credit.length}>
-            {credit.map((acc) => (
-              <FinancialCard key={acc.id} account={acc} />
-            ))}
-          </CardWrapper>
-        </Stack>
-
-        <TransactionContainer
-          accounts={accounts}
-          paginatedTransactions={paginatedTrans}
-        />
-      </>
-    );
   } catch (error) {
     return (
       <PageError
@@ -70,4 +45,31 @@ export default async function Home(props: {
       />
     );
   }
+
+  const credit = accounts.filter((account) => account.type === 'Credit');
+  const debit = accounts.filter((account) => account.type === 'Debit');
+
+  return (
+    <>
+      <Analysis analysisData={analysisData} />
+
+      <Stack className="my-4" spacing={1}>
+        <CardWrapper type="Debit" numAccounts={debit.length}>
+          {debit.map((acc) => (
+            <FinancialCard key={acc.id} account={acc} />
+          ))}
+        </CardWrapper>
+        <CardWrapper type="Credit" numAccounts={credit.length}>
+          {credit.map((acc) => (
+            <FinancialCard key={acc.id} account={acc} />
+          ))}
+        </CardWrapper>
+      </Stack>
+
+      <TransactionContainer
+        accounts={accounts}
+        paginatedTransactions={paginatedTrans}
+      />
+    </>
+  );
 }

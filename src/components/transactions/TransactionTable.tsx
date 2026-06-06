@@ -29,7 +29,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SearchIcon from '@mui/icons-material/Search';
-import { MouseEvent, SyntheticEvent, useEffect, useState } from 'react';
+import { MouseEvent, SyntheticEvent, useState } from 'react';
 import { PaginatedData, Transaction, CreateTransactionBody } from '@interface';
 import { PageLimit, BASE_URL } from '@constant';
 import { useTransactionActions } from './TransactionContainer';
@@ -42,7 +42,6 @@ type Suggestion = {
 
 function TransactionSearchBar() {
   const [keyword, setKeyword] = useState<string>('');
-  const [descriptions, setDescriptions] = useState<Suggestion[]>([]);
 
   const { searchTransactions } = useTransactionActions();
 
@@ -68,23 +67,16 @@ function TransactionSearchBar() {
     }
   }
 
-  const { data, isValidating } = useSWR(
+  const { data } = useSWR(
     keyword.length > 0 ? keyword : null,
     suggestionFetcher,
     { keepPreviousData: true },
   );
 
-  useEffect(() => {
-    // Keep the current options until new ones have been loaded, avoid flickering
-    if (keyword.length > 0) {
-      // When the options have been fetched and validated, use them
-      if (!isValidating && data !== undefined) {
-        setDescriptions(data);
-      }
-    } else {
-      setDescriptions([]);
-    }
-  }, [keyword, data, isValidating]);
+  // Derive descriptions from the SWR result instead of setting state in an effect.
+  // This avoids synchronously calling setState inside an effect which can
+  // cause cascading renders.
+  const descriptions: Suggestion[] = keyword.length > 0 ? data ?? [] : [];
 
   function capitalize(str: string) {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -230,14 +222,16 @@ function TransactionTableHead() {
 type TransactionMenuProps = {
   id: string;
   controlButton: string;
-  anchorEl: any;
+  anchorEl: Element | null;
   open: boolean;
   onClose: () => void;
   onChooseUpdate: () => void;
   onChooseDelete: () => void;
 };
 
-/** Menu to take actions on the transaction */
+/**
+ * Menu to take actions on the transaction
+ */
 function TransactionTableBodyMenu(props: TransactionMenuProps) {
   return (
     <Menu
@@ -277,7 +271,9 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
 
   const { allowActions, chooseUpdate, chooseDelete } = useTransactionActions();
 
-  /** Convert transaction to create body to pass to the update form */
+  /**
+   * Convert transaction to create body to pass to the update form
+   */
   function convertToCreateBody(transaction: Transaction) {
     return {
       account_id: transaction.account.id.toString(),
@@ -295,7 +291,7 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
         <TableRow data-cy="transaction-row" key={transaction.id} hover>
           <TableCell>
             <Typography>
-              {transaction.account.institution}'s {transaction.account.acc_name}
+              {transaction.account.institution}&apos;s {transaction.account.acc_name}
             </Typography>
           </TableCell>
           <TableCell>
@@ -414,7 +410,7 @@ export default function TransactionTable(props: {
 
   return (
     <>
-      <Paper className="bg-blue-200 rounded-xl">
+      <Paper className="bg-blue-300 rounded-xl">
         <Stack
           direction="row"
           className="bg-blue-900 text-white rounded-t-xl p-3 items-center justify-between"

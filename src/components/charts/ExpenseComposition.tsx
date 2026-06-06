@@ -17,7 +17,9 @@ export default function ExpenseComposition(props: {
   useEffect(() => {
     // Expose chart instance for Cypress E2E.
     // Avoid relying on global registry or DOM parsing.
+    // Still really flaky and doesn't handle the test cases really well
     if (window.Cypress) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).__expenseCompositionChart = chartRef.current;
     }
   }, []);

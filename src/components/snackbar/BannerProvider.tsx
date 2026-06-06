@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 const BannerContext = createContext({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   openBanner: (state: BannerState) => {},
 });
 
