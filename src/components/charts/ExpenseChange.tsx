@@ -9,14 +9,21 @@ import {
   Title,
   Tooltip,
   Legend,
+  ArcElement,
+  PointElement,
+  LineElement,
 } from 'chart.js';
 import { Box } from '@mui/material';
 import { CategoryInfo } from '@interface';
 
+// This registers on the global level, so it will be applied to every other charts
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  ArcElement,
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
   Legend,
@@ -38,10 +45,23 @@ export default function ExpenseChange(props: { percentages: CategoryInfo }) {
       },
       title: {
         display: true,
-        text: 'Change percentage from previous month',
+        text: 'Change percentage from previous to this month',
         font: {
           size: 20,
           weight: 'bold' as const,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          lineWidth: 1.75,
+          color: 'rgba(17, 24, 39, 0.12)',
+        },
+      },
+      y: {
+        grid: {
+          display: false,
         },
       },
     },

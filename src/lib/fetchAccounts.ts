@@ -1,6 +1,6 @@
 'use server';
 
-import { Account, CreateAccountBody } from '@interface';
+import { Account, CreateAccountBody, UpdateAccountBody } from '@interface';
 import { BASE_URL } from '@constant';
 import { revalidateTag } from 'next/cache';
 
@@ -27,7 +27,7 @@ export async function fetchAccounts(): Promise<Account[]> {
     }
     return resData.data ?? [];
   } catch (error) {
-    throw error;
+    throw error instanceof Error ? error : new Error('Unknown reasons');
   }
 }
 
@@ -58,9 +58,35 @@ export async function createAccount(
     }
 
     revalidateTag('fetch-accounts', { expire: 0 });
-
     return resData.data as Account;
   } catch (error) {
-    throw error;
+    throw error instanceof Error ? error : new Error('Unknown reasons');
+  }
+}
+
+/**
+ * Update the account and then revalidate the account list
+ */
+export async function updateAccount(
+  accountId: number,
+  formData: UpdateAccountBody,
+): Promise<Account> {
+  try {
+    const res = await fetch(`${BASE_URL}/accounts/${accountId}`, {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+    const resData = await res.json();
+    if (resData.error !== '') {
+      throw new Error(resData.error);
+    }
+
+    revalidateTag('fetch-accounts', { expire: 0 });
+    return resData.data as Account;
+  } catch (error) {
+    throw error instanceof Error ? error : new Error('Unknown reasons');
   }
 }

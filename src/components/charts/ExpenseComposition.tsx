@@ -2,11 +2,9 @@
 
 import { CategoryInfo } from '@interface';
 import { Box } from '@mui/material';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS } from 'chart.js';
 import { Pie, getElementAtEvent } from 'react-chartjs-2';
 import { MouseEvent, useEffect, useRef } from 'react';
-
-ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function ExpenseComposition(props: {
   percentages: CategoryInfo;
@@ -72,13 +70,14 @@ export default function ExpenseComposition(props: {
   };
 
   function handleClick(event: MouseEvent<HTMLCanvasElement>) {
-    if (!chartRef.current) return;
-    const elements = getElementAtEvent(chartRef.current, event);
-    if (!elements.length) return;
-
-    const { index } = elements[0];
-    const category = data.labels[index];
-    props.onChangeCategory(category);
+    if (chartRef.current) {
+      const elements = getElementAtEvent(chartRef.current, event);
+      if (elements.length) {
+        const { index } = elements[0];
+        const category = data.labels[index];
+        props.onChangeCategory(category);
+      }
+    }
   }
 
   return (

@@ -4,19 +4,24 @@ import { BASE_URL, PageLimit } from '@constant';
 import {
   Account,
   AccountAnalysisInfo,
+  CreateAccountBody,
   PaginatedData,
   Transaction,
+  UpdateAccountBody,
 } from '@interface';
-import FinancialCard from '@components/financial-card/FinancialCard';
 import { Button, Collapse, Stack, Tooltip } from '@mui/material';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import FinancialCard from '@components/financial-card/FinancialCard';
 import AccountForm from '@components/financial-card/AccountForm';
 import { getThisMonthDates } from '@lib/time';
+import { updateAccount } from '@lib/fetchAccounts';
 import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
+import ExpenseDaily from '@components/charts/ExpenseDaily';
 import TransactionTable from '@components/transactions/TransactionTable';
 import { useState, MouseEvent, useEffect } from 'react';
+import { BannerState, useBanner } from '@components/snackbar/BannerProvider';
 import useSWR from 'swr';
 
 /**
@@ -59,6 +64,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     category: null,
     offset: 0,
   });
+  const openBanner = useBanner();
 
   /**
    * Fetch the analysis for this account on demand, when the user clicks the "Details" button
@@ -68,8 +74,13 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   ): Promise<AccountAnalysisInfo> {
     try {
       const [firstDate, lastDate] = getThisMonthDates();
-      const url = `${BASE_URL}/accounts/${accountId}/summary?start=${firstDate}&end=${lastDate}`;
-      const res = await fetch(url, { method: 'GET' });
+      const accSummaryUrl = `${BASE_URL}/accounts/${accountId}/summary?start=${firstDate}&end=${lastDate}`;
+      const res = await fetch(accSummaryUrl, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      });
       const resData = await res.json();
       if (resData.error !== '') {
         throw new Error(resData.error);
@@ -95,6 +106,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     },
   );
 
+  const dailyData = analysisData?.daily;
   const changeData = analysisData?.change;
   const compositionData = analysisData?.composition;
 
@@ -106,12 +118,17 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   ): Promise<PaginatedData<Transaction[]>> {
     try {
       const [firstDate, lastDate] = getThisMonthDates();
-      let url = `${BASE_URL}/accounts/${key.accountId}/transactions?`;
-      url += `start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
+      let accTranUrl = `${BASE_URL}/accounts/${key.accountId}/transactions?`;
+      accTranUrl += `start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
       if (key.category) {
-        url += `&category=${key.category}`;
+        accTranUrl += `&category=${key.category}`;
       }
-      const res = await fetch(url, { method: 'GET' });
+      const res = await fetch(accTranUrl, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      });
       const resData = await res.json();
       if (resData.error !== '') {
         throw new Error(resData.error);
@@ -125,7 +142,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
 
       return paginatedTrans;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Unknown error');
+      throw error instanceof Error ? error : new Error('Unknown reasons');
     }
   }
 
@@ -182,6 +199,34 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     setTranFetchKey((prev) => ({ ...prev, offset: newOffset }));
   }
 
+  async function handleSubmitUpdateForm(data: CreateAccountBody) {
+    // Convert to update body
+    const updateData = {
+      acc_number: Number(data.acc_number),
+      acc_name: data.acc_name,
+      institution: data.institution,
+      balance: Number(data.balance),
+      credit_limit: data.credit_limit ? Number(data.credit_limit) : null,
+      next_due: data.next_due,
+    } as UpdateAccountBody;
+
+    let bannerState: BannerState;
+    try {
+      const updated = await updateAccount(props.account.id, updateData);
+      bannerState = {
+        message: `${updated.acc_name} updated successfully!`,
+        severity: 'success',
+      };
+      setUpdateFormOpen(false);
+    } catch (error) {
+      bannerState = {
+        message: error instanceof Error ? error.message : 'Unknown reasons',
+        severity: 'error',
+      };
+    }
+    openBanner(bannerState);
+  }
+
   return (
     <div className="p-2 rounded-xl bg-blue-300">
       <FinancialCard account={props.account} forDetail />
@@ -210,16 +255,23 @@ export default function DetailedFinancialCard(props: { account: Account }) {
       </Stack>
 
       <Collapse className="mt-8 p-4" in={present} timeout="auto" unmountOnExit>
-        <Stack direction="row" className="justify-evenly mb-8">
+        <ExpenseDaily dailyExpenses={dailyData!} />
+        <Stack direction="row" className="justify-evenly my-8">
           <ExpenseChange percentages={changeData!} />
           <ExpenseComposition
             percentages={compositionData!}
             onChangeCategory={(category) => {
+              // Move to first page when changing category
               setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
             }}
           />
         </Stack>
         <TransactionTable
+          title={
+            tranFetchKey.category
+              ? `List of ${props.account.acc_name}'s ${tranFetchKey.category.toLocaleLowerCase()} transactions`
+              : `List of ${props.account.acc_name}'s transactions`
+          }
           paginatedTransactions={transactionsData!}
           onPageChange={handlePageChange}
         />
@@ -228,6 +280,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
             title="Go back to list of latest transactions"
             label="Back to latest"
             onClick={() => {
+              // Move to first page when going back to latest
               setTranFetchKey((prev) => ({
                 ...prev,
                 category: null,
@@ -245,7 +298,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
         onClose={() => {
           setUpdateFormOpen(false);
         }}
-        onSubmit={() => {}}
+        onSubmit={handleSubmitUpdateForm}
       />
     </div>
   );

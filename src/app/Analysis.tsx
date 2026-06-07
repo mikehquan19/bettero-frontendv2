@@ -9,6 +9,7 @@ import useSWR from 'swr';
 import { useState, useEffect, MouseEvent } from 'react';
 import { BASE_URL, PageLimit } from '@constant';
 import { getThisMonthDates } from '@lib/time';
+import ExpenseDaily from '@components/charts/ExpenseDaily';
 
 /**
  * Button to close the collapse
@@ -45,6 +46,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     offset: 0,
   });
 
+  const dailyData = props.analysisData.daily;
   const changeData = props.analysisData.change;
   const compositionData = props.analysisData.composition;
 
@@ -57,10 +59,15 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     try {
       const [firstDate, lastDate] = getThisMonthDates();
       // Enforce that category is undefined
-      let url = `${BASE_URL}/transactions?`;
-      url += `category=${key.category!}&start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
+      let transactionUrl = `${BASE_URL}/transactions?`;
+      transactionUrl += `category=${key.category!}&start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
 
-      const res = await fetch(url, { method: 'GET' });
+      const res = await fetch(transactionUrl, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      });
       const resData = await res.json();
       if (resData.error !== '') {
         throw new Error(resData.error);
@@ -121,7 +128,8 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
         Spending analysis this month
       </Typography>
       <Stack className="bg-blue-300 rounded-b-xl shadow-lg p-4">
-        <Stack direction="row" className="justify-evenly">
+        <ExpenseDaily dailyExpenses={dailyData} />
+        <Stack direction="row" className="justify-evenly mt-8">
           <ExpenseChange percentages={changeData} />
           <ExpenseComposition
             percentages={compositionData}
@@ -136,6 +144,11 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
         <Collapse className="mt-8" in={tableOpen} timeout="auto" unmountOnExit>
           <div data-cy="category-tran-table">
             <TransactionTable
+              title={
+                fetchKey.category
+                  ? `List of ${fetchKey.category.toLocaleLowerCase()} transactions`
+                  : undefined
+              }
               paginatedTransactions={data!}
               onPageChange={handlePageChange}
             />

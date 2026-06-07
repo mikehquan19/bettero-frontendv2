@@ -73,6 +73,15 @@ export function defaultCreateAccountBody(type: string) {
   } as CreateAccountBody;
 }
 
+export type UpdateAccountBody = {
+  acc_number: number;
+  acc_name: string;
+  institution: string;
+  balance: number;
+  credit_limit: number | null;
+  next_due: string | null;
+};
+
 export type CreateAccountError = {
   acc_number: string;
   acc_name: string;
