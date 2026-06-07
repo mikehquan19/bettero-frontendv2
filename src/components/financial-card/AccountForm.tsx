@@ -244,10 +244,6 @@ export default function AccountForm(props: AccountFormProps) {
   const [error, setError] = useState(defaultCreateAccountError());
   const openBanner = useBanner();
 
-  const dialogKey = props.open
-    ? `account-form-open-${props.currentData?.acc_number ?? 'new'}`
-    : 'account-form-closed';
-
   /**
    * Do the last round of the validating and then submit the data
    */
@@ -286,7 +282,6 @@ export default function AccountForm(props: AccountFormProps) {
 
   return (
     <Dialog
-      key={dialogKey}
       data-cy="account-form"
       open={props.open}
       onClose={props.onClose}

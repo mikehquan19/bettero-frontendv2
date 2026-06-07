@@ -34,14 +34,16 @@ function CollapseButton(props: {
 }
 
 type transactionFetchKey = {
-  category: string;
+  category: string | null;
   offset: number;
 };
 
 export default function Analysis(props: { analysisData: AnalysisInfo }) {
-  const [category, setCategory] = useState<string | null>(null);
   const [tableOpen, setTableOpen] = useState<boolean>(false);
-  const [transactionsOffset, setTransactionsOffset] = useState<number>(0);
+  const [fetchKey, setFetchKey] = useState<transactionFetchKey>({
+    category: null,
+    offset: 0,
+  });
 
   const changeData = props.analysisData.change;
   const compositionData = props.analysisData.composition;
@@ -54,9 +56,9 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   ): Promise<PaginatedData<Transaction[]>> {
     try {
       const [firstDate, lastDate] = getThisMonthDates();
-
+      // Enforce that category is undefined
       let url = `${BASE_URL}/transactions?`;
-      url += `category=${key.category}&start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
+      url += `category=${key.category!}&start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
 
       const res = await fetch(url, { method: 'GET' });
       const resData = await res.json();
@@ -82,11 +84,10 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
 
   // Client-fetching the transactions of the given category of this month
   const { data, isValidating } = useSWR(
-    category
-      ? ({ category, offset: transactionsOffset } as transactionFetchKey)
-      : null,
+    fetchKey.category ? fetchKey : null,
     transactionFetcher,
     {
+      revalidateOnFocus: false, // Disable revalidation on window focus
       keepPreviousData: true, // To keep previous data while loading new one
     },
   );
@@ -95,11 +96,11 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     // If it's not open, open if initial data has been loaded.
     // Otherwise, close if button is clicked.
     if (!tableOpen) {
-      setTableOpen(category !== null && !isValidating);
-    } else if (category == null) {
+      setTableOpen(fetchKey.category !== null && !isValidating);
+    } else if (fetchKey.category == null) {
       setTableOpen(false);
     }
-  }, [category, isValidating, tableOpen]);
+  }, [fetchKey, isValidating, tableOpen]);
 
   function handlePageChange(
     event: MouseEvent<HTMLButtonElement> | null,
@@ -107,7 +108,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   ) {
     const newOffset = page * PageLimit;
     // If offset changes, useSWR should be able to re-fetch data because key changes
-    setTransactionsOffset(newOffset);
+    setFetchKey((prev) => ({ ...prev, offset: newOffset }));
   }
 
   return (
@@ -124,7 +125,10 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
           <ExpenseChange percentages={changeData} />
           <ExpenseComposition
             percentages={compositionData}
-            onChangeCategory={(category) => setCategory(category)}
+            onChangeCategory={(category) => {
+              // Moves back to first page when changing category
+              setFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+            }}
           />
         </Stack>
 
@@ -138,7 +142,9 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
           </div>
           <CollapseButton
             className="mt-2 flex flex-row justify-center"
-            onClick={() => setCategory(null)}
+            onClick={() => {
+              setFetchKey((prev) => ({ ...prev, category: null, offset: 0 }));
+            }}
           />
         </Collapse>
       </Stack>

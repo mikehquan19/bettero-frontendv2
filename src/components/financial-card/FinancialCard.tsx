@@ -1,12 +1,13 @@
 'use client';
 
 import { Card, CardContent, Stack, Box, Typography } from '@mui/material';
-import bankToTheme from './bankToTheme';
+import { BankToTheme } from '@constant';
 import { Account } from '@interface';
 
-export default function FinancialCard(props: { account: Account }) {
-  const account = props.account;
-
+export default function FinancialCard(props: {
+  account: Account;
+  forDetail?: boolean;
+}) {
   /**
    * Show only the last 4 digits of the 16-digit account number
    */
@@ -21,56 +22,51 @@ export default function FinancialCard(props: { account: Account }) {
     return '';
   }
 
-  const bank = account.institution;
-  const bg = bankToTheme[bank].background;
-  const text = bankToTheme[bank].primary;
-
-  // Each card also has data-cy tag used for testing
-  const dataCyTag = `${account.type.toLowerCase()}-card`;
+  const bank = props.account.institution;
+  const bg = BankToTheme[bank].background;
+  const text = BankToTheme[bank].primary;
 
   return (
     <Card
-      data-cy={dataCyTag}
-      className={`rounded-xl min-w-[340] min-h-[220] ${bg} ${text}`}
+      data-cy={`${props.account.type.toLowerCase()}-card`}
+      className={`rounded-xl min-w-[360px] h-[240px] ${bg} ${text}`}
     >
       <CardContent className="h-full">
         <Stack className="h-full justify-between">
           <Box>
-            <Typography variant="h5">{account.institution}</Typography>
-            <Typography>{account.acc_name}</Typography>
+            <Typography variant="h5">{bank}</Typography>
+            <Typography>{props.account.acc_name}</Typography>
           </Box>
-          <Box>
-            {account.type == 'Credit' && (
-              <Stack direction="row" className="justify-between items-end">
-                <Box>
-                  <Typography className="text-sm">Next due:</Typography>
-                  <Typography>{toString(account.next_due)}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-sm">Limit:</Typography>
-                  <Typography variant="h6">
-                    $
-                    {account.credit_limit !== null
-                      ? account.credit_limit.toFixed(2)
-                      : -1}
-                  </Typography>
-                </Box>
-              </Stack>
-            )}
-          </Box>
-          <Box>
-            <Stack direction="row" className="justify-between items-end">
-              <Typography className="text-sm">
-                **** **** **** {hideAccNumber(account.acc_number)}
-              </Typography>
+          {props.account.type == 'Credit' && (
+            <Stack direction="row" className="justify-between">
               <Box>
-                <Typography className="text-sm">Balance:</Typography>
-                <Typography variant="h5">
-                  ${account.balance.toFixed(2)}
+                <Typography className="text-sm">Next due:</Typography>
+                <Typography>{toString(props.account.next_due)}</Typography>
+              </Box>
+              <Box>
+                <Typography className="text-sm">Limit:</Typography>
+                <Typography>
+                  $
+                  {props.account.credit_limit !== null
+                    ? props.account.credit_limit.toFixed(2)
+                    : -1}
                 </Typography>
               </Box>
             </Stack>
-          </Box>
+          )}
+          <Stack direction="row" className="justify-between items-end">
+            <Typography className={props.forDetail ? 'text-lg' : 'text-sm'}>
+              {props.forDetail
+                ? props.account.acc_number
+                : `**** **** **** ${hideAccNumber(props.account.acc_number)}`}
+            </Typography>
+            <Box>
+              <Typography className="text-sm">Balance:</Typography>
+              <Typography variant="h5">
+                ${props.account.balance.toFixed(2)}
+              </Typography>
+            </Box>
+          </Stack>
         </Stack>
       </CardContent>
     </Card>
