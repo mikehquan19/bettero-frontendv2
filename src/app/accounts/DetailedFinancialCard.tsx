@@ -10,19 +10,21 @@ import {
   UpdateAccountBody,
 } from '@interface';
 import { Button, Collapse, Stack, Tooltip } from '@mui/material';
+import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import FinancialCard from '@components/financial-card/FinancialCard';
 import AccountForm from '@components/financial-card/AccountForm';
 import { getThisMonthDates } from '@lib/time';
-import { updateAccount } from '@lib/fetchAccounts';
+import { deleteAccount, updateAccount } from '@lib/fetchAccounts';
 import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
 import ExpenseDaily from '@components/charts/ExpenseDaily';
 import TransactionTable from '@components/transactions/TransactionTable';
 import { useState, MouseEvent, useEffect } from 'react';
-import { BannerState, useBanner } from '@components/snackbar/BannerProvider';
+import { useBanner } from '@components/snackbar/BannerProvider';
 import useSWR from 'swr';
+import AccountDelete from '@components/financial-card/AccountDelete';
 
 /**
  * Option button for the detailed financial card
@@ -55,9 +57,13 @@ type accTranFetchKey = {
   offset: number;
 };
 
+/**
+ * Financial Card that enables user to see the datailed analysis of the account, as well as
+ * take actions on the account.
+ */
 export default function DetailedFinancialCard(props: { account: Account }) {
   const [updateFormOpen, setUpdateFormOpen] = useState(false);
-  //const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [tranFetchKey, setTranFetchKey] = useState<accTranFetchKey>({
     accountId: props.account.id,
@@ -172,7 +178,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   /**
    * Convert account to CreateAccountBody for pre-filling the update form
    */
-  function convertToCreateAccountBody(account: Account) {
+  function convertToCreateAccountBody(account: Account): CreateAccountBody {
     return {
       acc_number: account.acc_number.toString(),
       acc_name: account.acc_name,
@@ -185,7 +191,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
       next_due: account.next_due
         ? new Date(account.next_due).toISOString().split('T')[0]
         : null,
-    };
+    } as CreateAccountBody;
   }
 
   /**
@@ -210,21 +216,35 @@ export default function DetailedFinancialCard(props: { account: Account }) {
       next_due: data.next_due,
     } as UpdateAccountBody;
 
-    let bannerState: BannerState;
     try {
       const updated = await updateAccount(props.account.id, updateData);
-      bannerState = {
+      openBanner({
         message: `${updated.acc_name} updated successfully!`,
         severity: 'success',
-      };
+      });
       setUpdateFormOpen(false);
     } catch (error) {
-      bannerState = {
+      openBanner({
         message: error instanceof Error ? error.message : 'Unknown reasons',
         severity: 'error',
-      };
+      });
     }
-    openBanner(bannerState);
+  }
+
+  async function handleSubmitDeleteModal() {
+    try {
+      const message = await deleteAccount(props.account.id);
+      openBanner({
+        message,
+        severity: 'success',
+      });
+      setDeleteModalOpen(false);
+    } catch (error) {
+      openBanner({
+        message: error instanceof Error ? error.message : 'Unknown reasons',
+        severity: 'error',
+      });
+    }
   }
 
   return (
@@ -234,6 +254,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
         <OptionButton
           title="See this account's analysis and transactions"
           label="Details"
+          icon={<SignalCellularAltIcon />}
           onClick={() => {
             setAnalysisOpen(!analysisOpen);
           }}
@@ -250,10 +271,12 @@ export default function DetailedFinancialCard(props: { account: Account }) {
           title="Delete this account"
           label="Delete"
           icon={<DeleteForeverIcon />}
-          onClick={() => {}}
+          onClick={() => {
+            setDeleteModalOpen(true);
+          }}
         />
       </Stack>
-
+      {/* Details panel */}
       <Collapse className="mt-8 p-4" in={present} timeout="auto" unmountOnExit>
         <ExpenseDaily dailyExpenses={dailyData!} />
         <Stack direction="row" className="justify-evenly my-8">
@@ -272,6 +295,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
               ? `List of ${props.account.acc_name}'s ${tranFetchKey.category.toLocaleLowerCase()} transactions`
               : `List of ${props.account.acc_name}'s transactions`
           }
+          highlightBorder
           paginatedTransactions={transactionsData!}
           onPageChange={handlePageChange}
         />
@@ -290,6 +314,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
           />
         </Stack>
       </Collapse>
+      {/** Form for actions on individual account */}
       <AccountForm
         type="UPDATE"
         open={updateFormOpen}
@@ -299,6 +324,14 @@ export default function DetailedFinancialCard(props: { account: Account }) {
           setUpdateFormOpen(false);
         }}
         onSubmit={handleSubmitUpdateForm}
+      />
+      <AccountDelete
+        open={deleteModalOpen}
+        id={props.account.id}
+        onClose={() => {
+          setDeleteModalOpen(false);
+        }}
+        onSubmit={handleSubmitDeleteModal}
       />
     </div>
   );

@@ -32,12 +32,17 @@ export default async function Accounts(props: {
     );
   }
 
+  // TODO: Globalize this function
+  function capitalize(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
   return (
     <>
       <Typography variant="h5" className="font-bold text-gray-500">
-        Account-specific analysis
+        {type ? `${capitalize(type)} account's analysis` : "Account's analysis"}
       </Typography>
-      <Stack spacing={3} className="mt-4">
+      <Stack spacing={3} className="mt-2">
         {accounts.map((account) => (
           <DetailedFinancialCard key={account.id} account={account} />
         ))}

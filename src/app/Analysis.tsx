@@ -149,6 +149,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
                   ? `List of ${fetchKey.category.toLocaleLowerCase()} transactions`
                   : undefined
               }
+              highlightBorder
               paginatedTransactions={data!}
               onPageChange={handlePageChange}
             />

@@ -90,3 +90,24 @@ export async function updateAccount(
     throw error instanceof Error ? error : new Error('Unknown reasons');
   }
 }
+
+export async function deleteAccount(id: number): Promise<string> {
+  try {
+    const res = await fetch(`${BASE_URL}/accounts/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+    const resData = await res.json();
+    if (resData.error !== '') {
+      throw new Error(resData.error);
+    }
+
+    revalidateTag('fetch-accounts', { expire: 0 });
+
+    return resData.data as string;
+  } catch (error) {
+    throw error instanceof Error ? error : new Error('Unknown reasons');
+  }
+}

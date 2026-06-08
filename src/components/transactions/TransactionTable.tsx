@@ -76,7 +76,7 @@ function TransactionSearchBar() {
   // Derive descriptions from the SWR result instead of setting state in an effect.
   // This avoids synchronously calling setState inside an effect which can
   // cause cascading renders.
-  const descriptions: Suggestion[] = keyword.length > 0 ? data ?? [] : [];
+  const descriptions: Suggestion[] = keyword.length > 0 ? (data ?? []) : [];
 
   function capitalize(str: string) {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -252,7 +252,7 @@ function TransactionTableBodyMenu(props: TransactionMenuProps) {
         <ListItemIcon>
           <ModeEditIcon />
         </ListItemIcon>
-        <ListItemText>Update</ListItemText>
+        <ListItemText>Edit</ListItemText>
       </MenuItem>
       <MenuItem onClick={props.onChooseDelete}>
         <ListItemIcon>
@@ -291,7 +291,8 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
         <TableRow data-cy="transaction-row" key={transaction.id} hover>
           <TableCell>
             <Typography>
-              {transaction.account.institution}&apos;s {transaction.account.acc_name}
+              {transaction.account.institution}&apos;s{' '}
+              {transaction.account.acc_name}
             </Typography>
           </TableCell>
           <TableCell>
@@ -388,6 +389,16 @@ function PaginationFooter(props: PaginationFooterProps) {
   );
 }
 
+type TransactionTableProps = {
+  title?: string;
+  highlightBorder?: boolean; // When table is wrapped around another container
+  paginatedTransactions: PaginatedData<Transaction[]>;
+  onPageChange: (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    page: number,
+  ) => void;
+};
+
 /**
  * Table that only displays the list of paginated transactions.
  * It does not take the actions (create, update, delete a transaction),
@@ -395,13 +406,7 @@ function PaginationFooter(props: PaginationFooterProps) {
  *
  * When used directly, interactions with context provider is not enabled.
  */
-export default function TransactionTable(props: {
-  paginatedTransactions: PaginatedData<Transaction[]>;
-  onPageChange: (
-    event: React.MouseEvent<HTMLButtonElement> | null,
-    page: number,
-  ) => void;
-}) {
+export default function TransactionTable(props: TransactionTableProps) {
   const { allowActions, chooseCreate } = useTransactionActions();
 
   const currentPage = Math.floor(
@@ -410,13 +415,16 @@ export default function TransactionTable(props: {
 
   return (
     <>
-      <Paper className="bg-blue-300 rounded-xl">
+      <Paper
+        className={`bg-blue-300 rounded-xl ${props.highlightBorder ? 'border-2 border-gray-400' : ''}`}
+      >
         <Stack
           direction="row"
           className="bg-blue-900 text-white rounded-t-xl p-3 items-center justify-between"
         >
           <Typography variant="h6" className="font-bold">
-            List of transactions ({props.paginatedTransactions.total}):
+            {props.title ?? 'List of transactions'} (
+            {props.paginatedTransactions.total}):
           </Typography>
           {allowActions && <TransactionSearchBar />}
         </Stack>

@@ -195,12 +195,9 @@ export default function TransactionContainer(props: ContainerProps) {
       />
       <TransactionForm
         key={
+          // The form will remount so it will be able to present info
           formState.open
-            ? formState.type === 'CREATE'
-              ? 'transaction-form-new'
-              : `transaction-form-${
-                  currentData ? JSON.stringify(currentData) : 'update'
-                }`
+            ? `transaction-form-${currentData ? JSON.stringify(currentData) : 'new'}`
             : 'transaction-form-closed'
         }
         type={formState.type as 'CREATE' | 'UPDATE'}

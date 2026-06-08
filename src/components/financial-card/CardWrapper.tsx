@@ -7,7 +7,7 @@ import { ReactNode, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AccountForm from './AccountForm';
 import { CreateAccountBody } from '@interface';
-import { BannerState, useBanner } from '../snackbar/BannerProvider';
+import { BannerState, useBanner } from '@components/snackbar/BannerProvider';
 import { createAccount } from '@lib/fetchAccounts';
 
 export default function CardWrapper(props: {
