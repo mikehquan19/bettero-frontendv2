@@ -21,7 +21,7 @@ import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
 import ExpenseDaily from '@components/charts/ExpenseDaily';
 import TransactionTable from '@components/transactions/TransactionTable';
-import { useState, MouseEvent, useEffect } from 'react';
+import { useState, MouseEvent } from 'react';
 import { useBanner } from '@components/snackbar/BannerProvider';
 import useSWR from 'swr';
 import AccountDelete from '@components/financial-card/AccountDelete';
@@ -78,29 +78,25 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   async function analysisFetcher(
     accountId: number,
   ): Promise<AccountAnalysisInfo> {
-    try {
-      const [firstDate, lastDate] = getThisMonthDates();
-      const accSummaryUrl = `${BASE_URL}/accounts/${accountId}/summary?start=${firstDate}&end=${lastDate}`;
-      const res = await fetch(accSummaryUrl, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-      const resData = await res.json();
-      if (resData.error !== '') {
-        throw new Error(resData.error);
-      }
-
-      return {
-        accountId: accountId,
-        daily: resData.data.daily,
-        change: resData.data.change,
-        composition: resData.data.composition,
-      } as AccountAnalysisInfo;
-    } catch (error) {
-      throw error instanceof Error ? error : new Error('Unknown error');
+    const [firstDate, lastDate] = getThisMonthDates();
+    const accSummaryUrl = `${BASE_URL}/accounts/${accountId}/summary?start=${firstDate}&end=${lastDate}`;
+    const res = await fetch(accSummaryUrl, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+    const resData = await res.json();
+    if (resData.error !== '') {
+      throw new Error(resData.error);
     }
+
+    return {
+      accountId: accountId,
+      daily: resData.data.daily,
+      change: resData.data.change,
+      composition: resData.data.composition,
+    } as AccountAnalysisInfo;
   }
 
   const { data: analysisData } = useSWR(
@@ -122,34 +118,30 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   async function transactionsFetcher(
     key: accTranFetchKey,
   ): Promise<PaginatedData<Transaction[]>> {
-    try {
-      const [firstDate, lastDate] = getThisMonthDates();
-      let accTranUrl = `${BASE_URL}/accounts/${key.accountId}/transactions?`;
-      accTranUrl += `start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
-      if (key.category) {
-        accTranUrl += `&category=${key.category}`;
-      }
-      const res = await fetch(accTranUrl, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-      const resData = await res.json();
-      if (resData.error !== '') {
-        throw new Error(resData.error);
-      }
-
-      const paginatedTrans: PaginatedData<Transaction[]> = {
-        total: resData.data.total ?? 0,
-        offset: resData.data.offset ?? 0,
-        data: resData.data.data ?? [],
-      };
-
-      return paginatedTrans;
-    } catch (error) {
-      throw error instanceof Error ? error : new Error('Unknown reasons');
+    const [firstDate, lastDate] = getThisMonthDates();
+    let accTranUrl = `${BASE_URL}/accounts/${key.accountId}/transactions?`;
+    accTranUrl += `start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
+    if (key.category) {
+      accTranUrl += `&category=${key.category}`;
     }
+    const res = await fetch(accTranUrl, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+    const resData = await res.json();
+    if (resData.error !== '') {
+      throw new Error(resData.error);
+    }
+
+    const paginatedTrans: PaginatedData<Transaction[]> = {
+      total: resData.data.total ?? 0,
+      offset: resData.data.offset ?? 0,
+      data: resData.data.data ?? [],
+    };
+
+    return paginatedTrans;
   }
 
   // Fetch transactions data
@@ -157,17 +149,10 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     analysisOpen ? tranFetchKey : null,
     transactionsFetcher,
     {
-      revalidateOnFocus: false,
+      revalidateOnFocus: false, // To avoid revalidating data when going back to the component
       keepPreviousData: true, // To keep previous data while changing category or page
     },
   );
-
-  // Reset category and pagination when closing the details
-  useEffect(() => {
-    if (!analysisOpen) {
-      setTranFetchKey((prev) => ({ ...prev, category: null, offset: 0 }));
-    }
-  }, [analysisOpen]);
 
   // Open details only when analysis and transactions have been loaded initially
   // If details is already open, keepPreviousData will ensure the data is still there while changing category or page,
@@ -192,6 +177,14 @@ export default function DetailedFinancialCard(props: { account: Account }) {
         ? new Date(account.next_due).toISOString().split('T')[0]
         : null,
     } as CreateAccountBody;
+  }
+
+  function toggleAnalysisPanel() {
+    setAnalysisOpen(!analysisOpen);
+    // Reset category and pagination when closing the details
+    if (!analysisOpen) {
+      setTranFetchKey((prev) => ({ ...prev, category: null, offset: 0 }));
+    }
   }
 
   /**
@@ -255,9 +248,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
           title="See this account's analysis and transactions"
           label="Details"
           icon={<SignalCellularAltIcon />}
-          onClick={() => {
-            setAnalysisOpen(!analysisOpen);
-          }}
+          onClick={toggleAnalysisPanel}
         />
         <OptionButton
           title="Edit this account"

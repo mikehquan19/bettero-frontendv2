@@ -11,30 +11,26 @@ export async function fetchAnalysisInfo(
   startDate: string,
   endDate: string,
 ): Promise<AnalysisInfo> {
-  try {
-    const res = await fetch(
-      `${BASE_URL}/summary?start=${startDate}&end=${endDate}`,
-      {
-        method: 'GET',
-        next: {
-          revalidate: 60 * 60,
-          tags: ['fetch-analysis'],
-        },
+  const res = await fetch(
+    `${BASE_URL}/summary?start=${startDate}&end=${endDate}`,
+    {
+      method: 'GET',
+      next: {
+        revalidate: 60 * 60,
+        tags: ['fetch-analysis'],
       },
-    );
+    },
+  );
 
-    const resData = await res.json();
-    if (resData.error !== '') {
-      throw new Error(resData.error);
-    }
-    const analysisInfo: AnalysisInfo = {
-      basic: resData.data.basic ?? {},
-      daily: resData.data.daily ?? {},
-      change: resData.data.change ?? {},
-      composition: resData.data.composition ?? {},
-    };
-    return analysisInfo;
-  } catch (error) {
-    throw error;
+  const resData = await res.json();
+  if (resData.error !== '') {
+    throw new Error(resData.error);
   }
+
+  return {
+    basic: resData.data.basic ?? {},
+    daily: resData.data.daily ?? {},
+    change: resData.data.change ?? {},
+    composition: resData.data.composition ?? {},
+  } as AnalysisInfo;
 }
