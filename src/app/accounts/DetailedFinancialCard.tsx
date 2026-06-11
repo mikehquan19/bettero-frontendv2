@@ -119,6 +119,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     key: accTranFetchKey,
   ): Promise<PaginatedData<Transaction[]>> {
     const [firstDate, lastDate] = getThisMonthDates();
+
     let accTranUrl = `${BASE_URL}/accounts/${key.accountId}/transactions?`;
     accTranUrl += `start=${firstDate}&end=${lastDate}&offset=${key.offset}`;
     if (key.category) {
@@ -245,7 +246,11 @@ export default function DetailedFinancialCard(props: { account: Account }) {
       <FinancialCard account={props.account} forDetail />
       <Stack direction="row" spacing={2} className="justify-center mt-2">
         <OptionButton
-          title="See this account's analysis and transactions"
+          title={
+            analysisOpen
+              ? 'Collapse this account analysis and transactions'
+              : 'Expand this account analysis and transactions'
+          }
           label="Details"
           icon={<SignalCellularAltIcon />}
           onClick={toggleAnalysisPanel}

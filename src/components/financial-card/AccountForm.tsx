@@ -8,12 +8,15 @@ import {
   FormControl,
   Grid,
   InputLabel,
+  IconButton,
   MenuItem,
   Select,
   SelectChangeEvent,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { PickerValue } from '@mui/x-date-pickers/internals';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -75,7 +78,9 @@ export function ValidatedNumberField(props: FieldProps) {
   );
 }
 
-/** TextField with validation */
+/**
+ * TextField with validation
+ */
 export function ValidatedTextField(props: FieldProps) {
   function handleChangeField(e: ChangeEvent<HTMLInputElement>) {
     const _error =
@@ -211,17 +216,29 @@ export function DateTimeField(props: {
   );
 }
 
-// Button to submit form has identical shape and features
-export function SubmitButton(props: { onSubmit: () => void }) {
+/**
+ * Button to submit form, with hover title
+ * @param props
+ * @returns
+ */
+export function SubmitButton(props: { title?: string; onSubmit: () => void }) {
+  // Normalize the field
+  function normalize(str: string) {
+    const lowercase = str.toLocaleLowerCase();
+    return lowercase.charAt(0).toUpperCase() + lowercase.slice(1);
+  }
+
   return (
-    <Button
-      type="submit"
-      variant="contained"
-      className="bg-gray-400 font-bold rounded-lg"
-      onClick={props.onSubmit}
-    >
-      Submit
-    </Button>
+    <Tooltip title={props.title ? normalize(props.title) : 'Submit this form'}>
+      <Button
+        type="submit"
+        variant="contained"
+        className="bg-gray-400 font-bold rounded-lg"
+        onClick={props.onSubmit}
+      >
+        Submit
+      </Button>
+    </Tooltip>
   );
 }
 
@@ -293,6 +310,13 @@ export default function AccountForm(props: AccountFormProps) {
     >
       <DialogTitle variant="h5" className="font-bold text-center mb-2">
         {props.type} {props.accountType.toLocaleUpperCase()} ACCOUNTS
+        <IconButton
+          onClick={props.onClose}
+          size="small"
+          className="absolute right-2 top-2"
+        >
+          <Close />
+        </IconButton>
       </DialogTitle>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
@@ -359,7 +383,10 @@ export default function AccountForm(props: AccountFormProps) {
         )}
       </Grid>
       <DialogActions className="mt-4 flex flex-row justify-center">
-        <SubmitButton onSubmit={handleSubmit} />
+        <SubmitButton
+          title={props.type + ' this account'}
+          onSubmit={handleSubmit}
+        />
       </DialogActions>
     </Dialog>
   );

@@ -413,11 +413,11 @@ export default function TransactionTable(props: TransactionTableProps) {
     props.paginatedTransactions.offset / PageLimit,
   );
 
+  const borderStyle = props.highlightBorder ? 'border-2 border-gray-400' : '';
+
   return (
     <>
-      <Paper
-        className={`bg-blue-300 rounded-xl ${props.highlightBorder ? 'border-2 border-gray-400' : ''}`}
-      >
+      <Paper className={`bg-blue-300 rounded-xl ${borderStyle}`}>
         <Stack
           direction="row"
           className="bg-blue-900 text-white rounded-t-xl p-3 items-center justify-between"

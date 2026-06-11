@@ -4,7 +4,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
 } from '@mui/material';
+import { Close } from '@mui/icons-material';
 
 export default function AccountDelete(props: {
   open: boolean;
@@ -23,7 +25,16 @@ export default function AccountDelete(props: {
         },
       }}
     >
-      <DialogTitle className="font-bold">DELETE ACCOUNT</DialogTitle>
+      <DialogTitle className="font-bold">
+        DELETE ACCOUNT
+        <IconButton
+          onClick={props.onClose}
+          size="small"
+          className="absolute right-2 top-2"
+        >
+          <Close />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
         Are you sure you want to delete this account: {props.id}?
       </DialogContent>

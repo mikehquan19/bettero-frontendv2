@@ -4,7 +4,12 @@ import { Typography, Stack, Collapse, Button, Tooltip } from '@mui/material';
 import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
 import TransactionTable from '@components/transactions/TransactionTable';
-import { AnalysisInfo, PaginatedData, Transaction } from '@interface';
+import {
+  AnalysisInfo,
+  BasicInfo,
+  PaginatedData,
+  Transaction,
+} from '@interface';
 import useSWR from 'swr';
 import { useState, MouseEvent } from 'react';
 import { BASE_URL, PageLimit } from '@constant';
@@ -20,7 +25,7 @@ function CollapseButton(props: {
 }) {
   return (
     <div className={props.className}>
-      <Tooltip title="Hide the table">
+      <Tooltip title="Collapse the table">
         <Button
           data-cy="collapse-category-tran-btn"
           variant="contained"
@@ -30,6 +35,41 @@ function CollapseButton(props: {
           Close
         </Button>
       </Tooltip>
+    </div>
+  );
+}
+
+function InfoCards(props: { info: BasicInfo }) {
+  /**
+   * Normalize the snake case field to capitalized word
+   * @param field
+   * @returns
+   */
+  function normalize(field: string) {
+    const str = field.replaceAll('_', ' ');
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  return (
+    <div className="grid grid-cols-4 gap-6">
+      {[
+        'total_balance',
+        'total_amount_due',
+        'total_income',
+        'total_expense',
+      ].map((field) => (
+        <div
+          key={field}
+          className="bg-blue-400 rounded-xl shadow-md flex flex-col justify-between h-24 p-3"
+        >
+          <Typography className="self-start text-lg">
+            {normalize(field)}
+          </Typography>
+          <Typography variant="h5" className="self-end font-bold">
+            {props.info[field as keyof BasicInfo]}
+          </Typography>
+        </div>
+      ))}
     </div>
   );
 }
@@ -45,6 +85,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     offset: 0,
   });
 
+  const basicData = props.analysisData.basic;
   const dailyData = props.analysisData.daily;
   const changeData = props.analysisData.change;
   const compositionData = props.analysisData.composition;
@@ -110,9 +151,10 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
       >
         Spending analysis this month
       </Typography>
-      <Stack className="bg-blue-300 rounded-b-xl shadow-lg p-4">
+      <Stack spacing={6} className="bg-blue-300 rounded-b-xl shadow-lg p-4">
+        <InfoCards info={basicData} />
         <ExpenseDaily dailyExpenses={dailyData} />
-        <Stack direction="row" className="justify-evenly mt-8">
+        <Stack direction="row" className="justify-evenly">
           <ExpenseChange percentages={changeData} />
           <ExpenseComposition
             percentages={compositionData}

@@ -30,7 +30,7 @@ export default function CardWrapper(props: {
           <Typography variant="h6" className="font-bold">
             List of {type} accounts ({props.numAccounts}):
           </Typography>
-          <Tooltip title="See details">
+          <Tooltip title={`See details of your ${type} accounts`}>
             <IconButton
               id="See details"
               onClick={() => router.push(`/accounts?type=${type}`)}

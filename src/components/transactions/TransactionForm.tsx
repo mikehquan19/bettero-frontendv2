@@ -1,6 +1,22 @@
 'use client';
 
-import { Dialog, DialogActions, DialogTitle, Grid } from '@mui/material';
+import { BannerState, useBanner } from '@components/snackbar/BannerProvider';
+import {
+  SelectOption,
+  SelectField,
+  ValidatedTextField,
+  ValidatedNumberField,
+  DateTimeField,
+  SubmitButton,
+} from '@components/financial-card/AccountForm';
+import {
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  Grid,
+  IconButton,
+} from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { useState } from 'react';
 import {
   Account,
@@ -10,15 +26,6 @@ import {
   TransactionFormError,
 } from '@interface';
 import { categories } from '@constant';
-import { BannerState, useBanner } from '../snackbar/BannerProvider';
-import {
-  SelectOption,
-  SelectField,
-  ValidatedTextField,
-  ValidatedNumberField,
-  DateTimeField,
-  SubmitButton,
-} from '../financial-card/AccountForm';
 
 type TransactionFormProps = {
   type: 'CREATE' | 'UPDATE';
@@ -93,6 +100,13 @@ export default function TransactionForm(props: TransactionFormProps) {
     >
       <DialogTitle variant="h5" className="font-bold text-center mb-2">
         {props.type} TRANSACTIONS
+        <IconButton
+          onClick={props.onClose}
+          size="small"
+          className="absolute right-2 top-2"
+        >
+          <Close />
+        </IconButton>
       </DialogTitle>
       <Grid container spacing={2}>
         {props.type === 'CREATE' && (
@@ -156,7 +170,10 @@ export default function TransactionForm(props: TransactionFormProps) {
         </Grid>
       </Grid>
       <DialogActions className="mt-4 flex flex-row justify-center">
-        <SubmitButton onSubmit={handleSubmit} />
+        <SubmitButton
+          title={props.type + ' this transaction'}
+          onSubmit={handleSubmit}
+        />
       </DialogActions>
     </Dialog>
   );

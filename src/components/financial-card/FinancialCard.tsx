@@ -8,23 +8,22 @@ export default function FinancialCard(props: {
   account: Account;
   forDetail?: boolean;
 }) {
-  /**
-   * Show only the last 4 digits of the 16-digit account number
-   */
-  function hideAccNumber(accNumber: number): number {
-    return accNumber % 10000;
-  }
-
-  function toString(d: Date | null): string {
-    if (d !== null) {
-      return new Date(d).toISOString().split('T')[0];
-    }
-    return '';
-  }
-
   const bank = props.account.institution;
   const bg = BankToTheme[bank].background;
   const text = BankToTheme[bank].primary;
+
+  const nextDue = props.account.next_due
+    ? new Date(props.account.next_due).toISOString().split('T')[0]
+    : '';
+
+  const creditLimit = props.account.credit_limit
+    ? props.account.credit_limit.toFixed(2)
+    : -1;
+
+  // Show only the last 4 digits of the account number
+  const accNumber = props.forDetail
+    ? props.account.acc_number
+    : `**** **** **** ${props.account.acc_number % 10000}`;
 
   return (
     <Card
@@ -40,25 +39,18 @@ export default function FinancialCard(props: {
           {props.account.type == 'Credit' && (
             <Stack direction="row" className="justify-between">
               <Box>
-                <Typography className="text-sm">Next due:</Typography>
-                <Typography>{toString(props.account.next_due)}</Typography>
+                <Typography className="text-sm">Due:</Typography>
+                <Typography>{nextDue}</Typography>
               </Box>
               <Box>
                 <Typography className="text-sm">Limit:</Typography>
-                <Typography>
-                  $
-                  {props.account.credit_limit !== null
-                    ? props.account.credit_limit.toFixed(2)
-                    : -1}
-                </Typography>
+                <Typography>${creditLimit}</Typography>
               </Box>
             </Stack>
           )}
           <Stack direction="row" className="justify-between items-end">
             <Typography className={props.forDetail ? 'text-lg' : 'text-sm'}>
-              {props.forDetail
-                ? props.account.acc_number
-                : `**** **** **** ${hideAccNumber(props.account.acc_number)}`}
+              {accNumber}
             </Typography>
             <Box>
               <Typography className="text-sm">Balance:</Typography>
