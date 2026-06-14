@@ -154,10 +154,13 @@ export default function Summary() {
     return `List of ${category} transactions from ${startDate} to ${endDate}`;
   }
 
-  async function fetchPeriodAnalysis(period: Period): Promise<AnalysisInfo> {
-    const startDate = period.startDate;
-    const endDate = period.endDate;
-    const periodSummaryUrl = `${BASE_URL}/summary?start=${startDate}&end=${endDate}`;
+  async function fetchPeriodAnalysis(key: {
+    type: string;
+    period: Period;
+  }): Promise<AnalysisInfo> {
+    const startDate = key.period.startDate;
+    const endDate = key.period.endDate;
+    const periodSummaryUrl = `${BASE_URL}/summary?interval_type=${key.type}&start=${startDate}&end=${endDate}`;
     const res = await fetch(periodSummaryUrl, {
       method: 'GET',
       headers: {
@@ -213,7 +216,10 @@ export default function Summary() {
 
   // TODO: When things are going well, we will start caching
   const { data: analysisData } = useSWR(
-    tranFetchKey.selectedPeriod ?? selectedTypePeriods[0],
+    {
+      type: tranFetchKey.selectedType,
+      period: tranFetchKey.selectedPeriod ?? selectedTypePeriods[0],
+    },
     fetchPeriodAnalysis,
     {
       keepPreviousData: true,
@@ -264,7 +270,7 @@ export default function Summary() {
       <Stack
         direction="row"
         spacing={1}
-        className="p-2 mt-8 rounded-xl shadow-xl justify-center overflow-x-auto"
+        className="p-2 mt-8 rounded-xl shadow-xl overflow-x-auto"
       >
         {selectedTypePeriods.map((period, idx) => (
           <Button
@@ -293,7 +299,7 @@ export default function Summary() {
       {Boolean(analysisData) && (
         <Stack
           spacing={6}
-          className="my-8 bg-blue-300 rounded-xl shadow-lg p-4"
+          className="my-4 bg-blue-300 rounded-xl shadow-lg p-4"
         >
           <ExpenseDaily
             periodType={tranFetchKey.selectedType.toLocaleLowerCase()}
