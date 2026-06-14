@@ -93,9 +93,9 @@ export default function DetailedFinancialCard(props: { account: Account }) {
 
     return {
       accountId: accountId,
-      daily: resData.data.daily,
-      change: resData.data.change,
-      composition: resData.data.composition,
+      daily: resData.data.daily ?? {},
+      change: resData.data.change ?? {},
+      composition: resData.data.composition ?? {},
     } as AccountAnalysisInfo;
   }
 
