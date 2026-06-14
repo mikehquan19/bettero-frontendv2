@@ -31,6 +31,7 @@ const HoverLinePlugin = {
 ChartJS.register(HoverLinePlugin);
 
 export default function ExpenseDaily(props: {
+  periodType?: string;
   dailyExpenses: Record<string, number>;
 }) {
   const labels = Object.keys(props.dailyExpenses);
@@ -56,7 +57,7 @@ export default function ExpenseDaily(props: {
     plugins: {
       title: {
         display: true,
-        text: 'Total daily expenses for this month',
+        text: `Total daily expenses for this ${props.periodType ?? 'month'}`,
         font: {
           size: 20,
           weight: 'bold' as const,

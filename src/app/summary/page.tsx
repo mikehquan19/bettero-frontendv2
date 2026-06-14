@@ -22,6 +22,10 @@ type Period = {
   endDate: string;
 };
 
+function periodEqual(a: Period, b: Period): boolean {
+  return a.startDate === b.startDate && a.endDate === b.endDate;
+}
+
 type PeriodType = 'MONTH' | 'BIWEEK' | 'WEEK';
 
 type PeriodTranFetchKey = {
@@ -93,10 +97,22 @@ export default function Summary() {
     setTranFetchKey((prevKey) => ({
       ...prevKey,
       selectedType: newPeriodType,
+      // All categories
+      category: null,
       // the selectedPeriod is reset to null.
       // The analsysisuseSWR will recognize it and coalese it
       // to default value - the first value of the list of newly changed periods
       selectedPeriod: null,
+      // Move back to the first page
+      offset: 0,
+    }));
+  }
+
+  function handleChangePeriod(period: Period) {
+    setTranFetchKey((prevKey) => ({
+      ...prevKey,
+      category: null,
+      selectedPeriod: period,
       offset: 0,
     }));
   }
@@ -110,10 +126,9 @@ export default function Summary() {
   }
 
   function normalize(str: string) {
-    let capitalized = str.toLocaleLowerCase();
-    capitalized =
-      capitalized.charAt(0).toLocaleUpperCase() + capitalized.slice(1);
-    return capitalized;
+    let normalized = str.toLocaleLowerCase();
+    normalized = normalized.charAt(0).toLocaleUpperCase() + normalized.slice(1);
+    return normalized;
   }
 
   /**
@@ -255,31 +270,46 @@ export default function Summary() {
           <Button
             key={idx}
             variant="contained"
+            color={
+              periodEqual(
+                period,
+                tranFetchKey.selectedPeriod ?? selectedTypePeriods[0],
+              )
+                ? 'success'
+                : 'primary'
+            }
             className="p-1 rounded-lg min-w-50 text-xl flex"
-            onClick={() => {
-              setTranFetchKey((prevKey) => ({
-                ...prevKey,
-                selectedPeriod: period,
-              }));
-            }}
+            onClick={() => handleChangePeriod(period)}
           >
             {period.startDate.replaceAll('-', '/')} -{' '}
             {period.endDate.replaceAll('-', '/')}
           </Button>
         ))}
       </Stack>
-      {/* analysisData & transactionsData is separate, so this is fine */}
+      {/* 
+        analysisData & transactionsData fetching is separate since they are
+        separately rendered
+      */}
       {Boolean(analysisData) && (
         <Stack
           spacing={6}
           className="my-8 bg-blue-300 rounded-xl shadow-lg p-4"
         >
-          <ExpenseDaily dailyExpenses={dailyData!} />
+          <ExpenseDaily
+            periodType={tranFetchKey.selectedType.toLocaleLowerCase()}
+            dailyExpenses={dailyData!}
+          />
           <Stack direction="row" className="justify-evenly">
-            <ExpenseChange percentages={changeData!} />
+            <ExpenseChange
+              periodType={tranFetchKey.selectedType.toLocaleLowerCase()}
+              percentages={changeData!}
+            />
             <ExpenseComposition
+              periodType={tranFetchKey.selectedType.toLocaleLowerCase()}
               percentages={compositionData!}
-              onChangeCategory={() => {}}
+              onChangeCategory={(category) => {
+                setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+              }}
             />
           </Stack>
         </Stack>

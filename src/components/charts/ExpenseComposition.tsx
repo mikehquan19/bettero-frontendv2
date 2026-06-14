@@ -7,6 +7,7 @@ import { Pie, getElementAtEvent } from 'react-chartjs-2';
 import { MouseEvent, useEffect, useRef } from 'react';
 
 export default function ExpenseComposition(props: {
+  periodType?: string;
   percentages: CategoryInfo;
   onChangeCategory: (category: string) => void;
 }) {
@@ -28,7 +29,7 @@ export default function ExpenseComposition(props: {
     plugins: {
       title: {
         display: true,
-        text: ['Composition percentage this month'],
+        text: [`Composition percentage this ${props.periodType ?? 'month'}`],
         font: {
           size: 20,
           weight: 'bold' as const,

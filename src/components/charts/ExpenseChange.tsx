@@ -29,7 +29,10 @@ ChartJS.register(
   Legend,
 );
 
-export default function ExpenseChange(props: { percentages: CategoryInfo }) {
+export default function ExpenseChange(props: {
+  periodType?: string;
+  percentages: CategoryInfo;
+}) {
   const options = {
     indexAxis: 'y' as const,
     elements: {
@@ -45,7 +48,7 @@ export default function ExpenseChange(props: { percentages: CategoryInfo }) {
       },
       title: {
         display: true,
-        text: 'Change percentage from previous to this month',
+        text: `Change percentage from previous to this ${props.periodType ?? 'month'}`,
         font: {
           size: 20,
           weight: 'bold' as const,
