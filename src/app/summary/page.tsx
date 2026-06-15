@@ -3,6 +3,7 @@
 import ExpenseDaily from '@components/charts/ExpenseDaily';
 import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
+import TransactionTable from '@components/transactions/TransactionTable';
 import { AnalysisInfo, PaginatedData, Transaction } from '@interface';
 import { BASE_URL, PageLimit } from '@constant';
 import {
@@ -15,7 +16,6 @@ import {
 import { useState, MouseEvent, useMemo } from 'react';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
-import TransactionTable from '@components/transactions/TransactionTable';
 
 type Period = {
   startDate: string;
@@ -79,8 +79,8 @@ export default function Summary() {
     const _selectedTypePeriods: Period[] = [];
     let [start, end] = getCurrentPeriod(tranFetchKey.selectedType);
 
-    const sixMonthsAgo = dayjs().subtract(6, 'month').startOf('month');
-    while (start.isAfter(sixMonthsAgo)) {
+    const startSixMonthsAgo = dayjs().subtract(6, 'month').startOf('month');
+    while (start.isAfter(startSixMonthsAgo)) {
       _selectedTypePeriods.push({
         startDate: start.format('YYYY-MM-DD'),
         endDate: end.format('YYYY-MM-DD'),
@@ -135,27 +135,40 @@ export default function Summary() {
     setTranFetchKey((prev) => ({ ...prev, offset: newOffset }));
   }
 
-  function normalize(str: string) {
-    let normalized = str.toLocaleLowerCase();
-    normalized = normalized.charAt(0).toLocaleUpperCase() + normalized.slice(1);
-    return normalized;
+  /**
+   * To make the date format more readable to user
+   */
+  function getPeriodDisplay(period: Period): string {
+    const start = dayjs(period.startDate);
+    const end = dayjs(period.endDate);
+
+    if (start.year() === end.year()) {
+      if (start.month() === end.month()) {
+        return `${start.format('YYYY')}, ${start.format('MMM D')} - ${end.format('D')}`;
+      } else {
+        return `${start.format('YYYY')}, ${start.format('MMM D')} - ${end.format('MMM D')}`;
+      }
+    }
+    return `${start.format('MMM D, YYYY')} - ${end.format('MMM D, YYYY')}`;
   }
 
   /**
    * The title uses the state of the transaction fetch key, which should be
    * consistent with the fetching behavior
    */
-  function getTranTableTitle() {
+  function getTranTableTitle(): string {
     // Pick the first period from the list of periods if the selectedTypePeriods is not defined
     const startDate = tranFetchKey.selectedPeriod
-      ? tranFetchKey.selectedPeriod.startDate.replaceAll('-', '/')
-      : selectedTypePeriods[0].startDate.replaceAll('-', '/');
+      ? tranFetchKey.selectedPeriod.startDate
+      : selectedTypePeriods[0].startDate;
     const endDate = tranFetchKey.selectedPeriod
-      ? tranFetchKey.selectedPeriod.endDate.replaceAll('-', '/')
-      : selectedTypePeriods[0].endDate.replaceAll('-', '/');
+      ? tranFetchKey.selectedPeriod.endDate
+      : selectedTypePeriods[0].endDate;
+
+    const periodDisplay = getPeriodDisplay({ startDate, endDate } as Period);
 
     const category = (tranFetchKey.category ?? '').toLocaleLowerCase();
-    return `List of ${category} transactions from ${startDate} to ${endDate}`;
+    return `List of ${category} transactions ${periodDisplay}`;
   }
 
   async function fetchPeriodAnalysis(key: {
@@ -226,7 +239,6 @@ export default function Summary() {
       dedupingInterval: 0, // Disables the short-term memory cache
       revalidateIfStale: false, // Stops re-fetching when using stale cache
       revalidateOnFocus: false, // Stops refetching when window is focused
-      revalidateOnReconnect: false, // Stops refetching when network reconnects
     },
   );
   const dailyData = analysisData?.daily;
@@ -241,7 +253,6 @@ export default function Summary() {
       dedupingInterval: 0,
       revalidateIfStale: false,
       revalidateOnFocus: false,
-      revalidateOnReconnect: false,
     },
   );
 
@@ -259,11 +270,11 @@ export default function Summary() {
       >
         {['MONTH', 'BIWEEK', 'WEEK'].map((periodType) => (
           <ToggleButton
-            key={normalize(periodType)}
+            key={periodType}
             value={periodType}
-            aria-label={normalize(periodType)}
+            aria-label={periodType}
           >
-            {normalize(periodType)}
+            {periodType}
           </ToggleButton>
         ))}
       </ToggleButtonGroup>
@@ -284,11 +295,10 @@ export default function Summary() {
                 ? 'success'
                 : 'primary'
             }
-            className="p-1 rounded-lg min-w-50 text-xl flex"
+            className="p-1 rounded-lg min-h-16 min-w-50 text-lg font-semibold flex normal-case"
             onClick={() => handleChangePeriod(period)}
           >
-            {period.startDate.replaceAll('-', '/')} -{' '}
-            {period.endDate.replaceAll('-', '/')}
+            {getPeriodDisplay(period)}
           </Button>
         ))}
       </Stack>

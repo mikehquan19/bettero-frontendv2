@@ -34,6 +34,7 @@ import { PaginatedData, Transaction, CreateTransactionBody } from '@interface';
 import { PageLimit, BASE_URL } from '@constant';
 import { useTransactionActions } from './TransactionContainer';
 import useSWR from 'swr';
+import dayjs from 'dayjs';
 
 type Suggestion = {
   name: string;
@@ -46,11 +47,16 @@ function TransactionSearchBar() {
   const { searchTransactions } = useTransactionActions();
 
   // Fetcher function to get list of sugestions
-  async function suggestionFetcher(keyword: string): Promise<Suggestion[]> {
+  async function fetchSuggestions(keyword: string): Promise<Suggestion[]> {
     try {
       const res = await fetch(
         `${BASE_URL}/transactions/autocomplete?q=${keyword}`,
-        { method: 'GET' },
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+          },
+        },
       );
       const resData = await res.json();
       if (resData.error !== '') {
@@ -69,7 +75,7 @@ function TransactionSearchBar() {
 
   const { data } = useSWR(
     keyword.length > 0 ? keyword : null,
-    suggestionFetcher,
+    fetchSuggestions,
     { keepPreviousData: true },
   );
 
@@ -309,7 +315,7 @@ function TransactionTableBody(props: { transactions: Transaction[] }) {
           </TableCell>
           <TableCell>
             <Typography>
-              {new Date(transaction.created_at).toISOString().split('T')[0]}
+              {dayjs(transaction.created_at).format('MMM D, YYYY')}
             </Typography>
           </TableCell>
           {allowActions && (

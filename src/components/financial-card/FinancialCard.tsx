@@ -3,6 +3,7 @@
 import { Card, CardContent, Stack, Box, Typography } from '@mui/material';
 import { BankToTheme } from '@constant';
 import { Account } from '@interface';
+import dayjs from 'dayjs';
 
 export default function FinancialCard(props: {
   account: Account;
@@ -13,7 +14,7 @@ export default function FinancialCard(props: {
   const text = BankToTheme[bank].primary;
 
   const nextDue = props.account.next_due
-    ? new Date(props.account.next_due).toISOString().split('T')[0]
+    ? dayjs(props.account.next_due).format('MMM D, YYYY')
     : '';
 
   const creditLimit = props.account.credit_limit
