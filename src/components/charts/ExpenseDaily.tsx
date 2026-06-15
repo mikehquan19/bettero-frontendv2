@@ -1,8 +1,9 @@
 'use client';
 
-import { Chart as ChartJS } from 'chart.js';
+import { Chart as ChartJS, TimeScale, TimeSeriesScale } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { Box } from '@mui/material';
+import 'chartjs-adapter-date-fns';
 
 // Add the hover line register to chart
 const HoverLinePlugin = {
@@ -28,7 +29,7 @@ const HoverLinePlugin = {
     }
   },
 };
-ChartJS.register(HoverLinePlugin);
+ChartJS.register(HoverLinePlugin, TimeScale, TimeSeriesScale);
 
 export default function ExpenseDaily(props: {
   periodType?: string;
@@ -65,8 +66,11 @@ export default function ExpenseDaily(props: {
       },
     },
     scales: {
-      // Skip every other date, to avoid label cluttering
       x: {
+        type: 'timeseries' as const,
+        time: {
+          unit: 'day' as const,
+        },
         ticks: {
           autoSkip: true,
           maxTicksLimit: 15,
