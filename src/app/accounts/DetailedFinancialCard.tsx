@@ -51,7 +51,7 @@ function OptionButton(props: {
   );
 }
 
-type accTranFetchKey = {
+type AccTranFetchKey = {
   accountId: number;
   category: string | null;
   offset: number;
@@ -65,7 +65,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   const [updateFormOpen, setUpdateFormOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
-  const [tranFetchKey, setTranFetchKey] = useState<accTranFetchKey>({
+  const [tranFetchKey, setTranFetchKey] = useState<AccTranFetchKey>({
     accountId: props.account.id,
     category: null,
     offset: 0,
@@ -116,7 +116,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
    * Fetch the transactions for this account on demand
    */
   async function transactionsFetcher(
-    key: accTranFetchKey,
+    key: AccTranFetchKey,
   ): Promise<PaginatedData<Transaction[]>> {
     const [firstDate, lastDate] = getThisMonthDates();
 
@@ -300,12 +300,14 @@ export default function DetailedFinancialCard(props: { account: Account }) {
             title="Go back to list of latest transactions"
             label="Back to latest"
             onClick={() => {
-              // Move to first page when going back to latest
-              setTranFetchKey((prev) => ({
-                ...prev,
-                category: null,
-                offset: 0,
-              }));
+              if (tranFetchKey.category !== null) {
+                // Move to first page when going back to latest
+                setTranFetchKey((prev) => ({
+                  ...prev,
+                  category: null,
+                  offset: 0,
+                }));
+              }
             }}
           />
         </Stack>

@@ -47,12 +47,11 @@ export default function Summary() {
   const selectedTypePeriods = useMemo(() => {
     // Get the current month, biweek, and week
     function getCurrentPeriod(type: PeriodType): [dayjs.Dayjs, dayjs.Dayjs] {
-      let end: dayjs.Dayjs;
       switch (type) {
         case 'MONTH':
           return [dayjs().startOf('month'), dayjs().endOf('month')];
         case 'BIWEEK':
-          end = dayjs().endOf('week');
+          const end = dayjs().endOf('week');
           return [end.subtract(13, 'day'), end];
         case 'WEEK':
           return [dayjs().startOf('week'), dayjs().endOf('week')];
@@ -70,7 +69,7 @@ export default function Summary() {
           start = period[0].subtract(1, 'month');
           return [start, start.endOf('month')];
         case 'BIWEEK':
-          return [period[0].subtract(13, 'day'), period[1].subtract(13, 'day')];
+          return [period[0].subtract(14, 'day'), period[1].subtract(14, 'day')];
         case 'WEEK':
           start = period[0].subtract(1, 'week');
           return [start, start.endOf('week')];
@@ -79,7 +78,9 @@ export default function Summary() {
 
     const _selectedTypePeriods: Period[] = [];
     let [start, end] = getCurrentPeriod(tranFetchKey.selectedType);
-    for (let idx = 0; idx < 6; idx++) {
+
+    const sixMonthsAgo = dayjs().subtract(6, 'month').startOf('month');
+    while (start.isAfter(sixMonthsAgo)) {
       _selectedTypePeriods.push({
         startDate: start.format('YYYY-MM-DD'),
         endDate: end.format('YYYY-MM-DD'),
@@ -87,34 +88,43 @@ export default function Summary() {
 
       [start, end] = getPreviousPeriod(tranFetchKey.selectedType, [start, end]);
     }
+
     return _selectedTypePeriods;
   }, [tranFetchKey.selectedType]);
 
   function handleChangePeriodType(
     event: MouseEvent<HTMLElement>,
-    newPeriodType: PeriodType,
+    newPeriodType: PeriodType | null,
   ) {
-    setTranFetchKey((prevKey) => ({
-      ...prevKey,
-      selectedType: newPeriodType,
-      // All categories
-      category: null,
-      // the selectedPeriod is reset to null.
-      // The analsysisuseSWR will recognize it and coalese it
-      // to default value - the first value of the list of newly changed periods
-      selectedPeriod: null,
-      // Move back to the first page
-      offset: 0,
-    }));
+    // If user clicks on type twice, they effectively deselect the option, and selectedType is null
+    // this is avoid that
+    const forceType = newPeriodType ?? tranFetchKey.selectedType;
+    if (tranFetchKey.selectedType !== forceType) {
+      setTranFetchKey((prevKey) => ({
+        ...prevKey,
+        selectedType: forceType,
+        // Fetch all categories
+        category: null,
+        // Coalese it to the first value of the list of newly changed periods
+        selectedPeriod: null,
+        // Move back to the first page
+        offset: 0,
+      }));
+    }
   }
 
   function handleChangePeriod(period: Period) {
-    setTranFetchKey((prevKey) => ({
-      ...prevKey,
-      category: null,
-      selectedPeriod: period,
-      offset: 0,
-    }));
+    if (
+      !tranFetchKey.selectedPeriod ||
+      !periodEqual(period, tranFetchKey.selectedPeriod)
+    ) {
+      setTranFetchKey((prevKey) => ({
+        ...prevKey,
+        category: null,
+        selectedPeriod: period,
+        offset: 0,
+      }));
+    }
   }
 
   function handlePageChange(
@@ -136,19 +146,13 @@ export default function Summary() {
    * consistent with the fetching behavior
    */
   function getTranTableTitle() {
-    let startDate: string;
-    let endDate: string;
-    if (tranFetchKey.selectedPeriod) {
-      startDate = tranFetchKey.selectedPeriod.startDate;
-      endDate = tranFetchKey.selectedPeriod.endDate;
-    } else {
-      // Pick the first period from the list of periods if the selectedTypePeriods is
-      // not defined
-      startDate = selectedTypePeriods[0].startDate;
-      endDate = selectedTypePeriods[0].endDate;
-    }
-    startDate = startDate.replaceAll('-', '/');
-    endDate = endDate.replaceAll('-', '/');
+    // Pick the first period from the list of periods if the selectedTypePeriods is not defined
+    const startDate = tranFetchKey.selectedPeriod
+      ? tranFetchKey.selectedPeriod.startDate.replaceAll('-', '/')
+      : selectedTypePeriods[0].startDate.replaceAll('-', '/');
+    const endDate = tranFetchKey.selectedPeriod
+      ? tranFetchKey.selectedPeriod.endDate.replaceAll('-', '/')
+      : selectedTypePeriods[0].endDate.replaceAll('-', '/');
 
     const category = (tranFetchKey.category ?? '').toLocaleLowerCase();
     return `List of ${category} transactions from ${startDate} to ${endDate}`;
@@ -182,17 +186,13 @@ export default function Summary() {
   async function fetchPeriodTransactions(
     key: PeriodTranFetchKey,
   ): Promise<PaginatedData<Transaction[]>> {
-    let startDate: string;
-    let endDate: string;
-    if (key.selectedPeriod) {
-      startDate = key.selectedPeriod.startDate;
-      endDate = key.selectedPeriod.endDate;
-    } else {
-      // Pick the first period from the list of periods if the selectedTypePeriods is
-      // not defined
-      startDate = selectedTypePeriods[0].startDate;
-      endDate = selectedTypePeriods[0].endDate;
-    }
+    const startDate = tranFetchKey.selectedPeriod
+      ? tranFetchKey.selectedPeriod.startDate
+      : selectedTypePeriods[0].startDate;
+    const endDate = tranFetchKey.selectedPeriod
+      ? tranFetchKey.selectedPeriod.endDate
+      : selectedTypePeriods[0].endDate;
+
     let periodTranUrl = `${BASE_URL}/transactions?start=${startDate}&end=${endDate}&offset=${key.offset}`;
     if (key.category) {
       periodTranUrl += `&category=${key.category}`;
@@ -293,8 +293,7 @@ export default function Summary() {
         ))}
       </Stack>
       {/* 
-        analysisData & transactionsData fetching is separate since they are
-        separately rendered
+        analysisData & transactionsData fetching is separate since they are separately rendered
       */}
       {Boolean(analysisData) && (
         <Stack
@@ -327,6 +326,23 @@ export default function Summary() {
           onPageChange={handlePageChange}
         />
       )}
+      <Stack direction="row" className="justify-center mt-4">
+        <Button
+          className="bg-gray-400 font-bold rounded-lg flex"
+          variant="contained"
+          onClick={() => {
+            if (tranFetchKey.category !== null) {
+              setTranFetchKey((prev) => ({
+                ...prev,
+                category: null,
+                offset: 0,
+              }));
+            }
+          }}
+        >
+          Back To Latest
+        </Button>
+      </Stack>
     </>
   );
 }
