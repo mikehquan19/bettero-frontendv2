@@ -159,8 +159,10 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
           <ExpenseComposition
             percentages={compositionData}
             onChangeCategory={(category) => {
-              // Moves back to first page when changing category
-              setFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+              if (category !== fetchKey.category) {
+                // Moves back to first page when changing category
+                setFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+              }
             }}
           />
         </Stack>

@@ -313,7 +313,9 @@ export default function Summary() {
               periodType={tranFetchKey.selectedType.toLocaleLowerCase()}
               percentages={compositionData!}
               onChangeCategory={(category) => {
-                setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+                if (category !== tranFetchKey.category) {
+                  setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+                }
               }}
             />
           </Stack>

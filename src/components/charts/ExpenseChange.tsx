@@ -92,7 +92,8 @@ export default function ExpenseChange(props: {
       {
         label: 'Change (%)',
         data: percentages,
-        borderColor: colors,
+        borderColor: 'white',
+        borderWidth: 1,
         backgroundColor: colors,
       },
     ],

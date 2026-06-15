@@ -280,8 +280,10 @@ export default function DetailedFinancialCard(props: { account: Account }) {
           <ExpenseComposition
             percentages={compositionData!}
             onChangeCategory={(category) => {
-              // Move to first page when changing category
-              setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+              if (category !== tranFetchKey.category) {
+                // Move to first page when changing category
+                setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+              }
             }}
           />
         </Stack>
