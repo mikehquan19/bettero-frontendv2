@@ -13,7 +13,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { useState, MouseEvent, useMemo } from 'react';
+import { useState, MouseEvent, useMemo, useEffect } from 'react';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
 
@@ -42,6 +42,7 @@ export default function Summary() {
     category: null,
     offset: 0,
   });
+  const [tranTableTitle, setTranTableTitle] = useState('');
 
   // Recalculate the list of periods only when selectedType changes
   const selectedTypePeriods = useMemo(() => {
@@ -152,25 +153,6 @@ export default function Summary() {
     return `${start.format('MMM D, YYYY')} - ${end.format('MMM D, YYYY')}`;
   }
 
-  /**
-   * The title uses the state of the transaction fetch key, which should be
-   * consistent with the fetching behavior
-   */
-  function getTranTableTitle(): string {
-    // Pick the first period from the list of periods if the selectedTypePeriods is not defined
-    const startDate = tranFetchKey.selectedPeriod
-      ? tranFetchKey.selectedPeriod.startDate
-      : selectedTypePeriods[0].startDate;
-    const endDate = tranFetchKey.selectedPeriod
-      ? tranFetchKey.selectedPeriod.endDate
-      : selectedTypePeriods[0].endDate;
-
-    const periodDisplay = getPeriodDisplay({ startDate, endDate } as Period);
-
-    const category = (tranFetchKey.category ?? '').toLocaleLowerCase();
-    return `List of ${category} transactions ${periodDisplay}`;
-  }
-
   async function fetchPeriodAnalysis(key: {
     type: string;
     period: Period;
@@ -245,7 +227,7 @@ export default function Summary() {
   const changeData = analysisData?.change;
   const compositionData = analysisData?.composition;
 
-  const { data: transactionsData } = useSWR(
+  const { data: transactionsData, isValidating } = useSWR(
     tranFetchKey,
     fetchPeriodTransactions,
     {
@@ -255,6 +237,33 @@ export default function Summary() {
       revalidateOnFocus: false,
     },
   );
+
+  // The title uses the state of the transaction fetch key, which should be
+  // consistent with the fetching behavior
+  useEffect(() => {
+    if (!isValidating && Boolean(transactionsData)) {
+      // Pick the first one from the list of periods if the selectedTypePeriods is not defined
+      const startDate = tranFetchKey.selectedPeriod
+        ? tranFetchKey.selectedPeriod.startDate
+        : selectedTypePeriods[0].startDate;
+      const endDate = tranFetchKey.selectedPeriod
+        ? tranFetchKey.selectedPeriod.endDate
+        : selectedTypePeriods[0].endDate;
+
+      const periodDisplay = getPeriodDisplay({ startDate, endDate } as Period);
+      const categoryDisplay = (tranFetchKey.category ?? '').toLocaleLowerCase();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTranTableTitle(
+        `List of ${categoryDisplay} transactions ${periodDisplay}`,
+      );
+    }
+  }, [
+    isValidating,
+    transactionsData,
+    tranFetchKey.selectedPeriod,
+    selectedTypePeriods,
+    tranFetchKey.category,
+  ]);
 
   return (
     <>
@@ -333,7 +342,7 @@ export default function Summary() {
       )}
       {Boolean(transactionsData) && (
         <TransactionTable
-          title={getTranTableTitle()}
+          title={tranTableTitle}
           paginatedTransactions={transactionsData!}
           onPageChange={handlePageChange}
         />

@@ -11,7 +11,7 @@ import {
   Transaction,
 } from '@interface';
 import useSWR from 'swr';
-import { useState, MouseEvent } from 'react';
+import { useState, MouseEvent, useEffect } from 'react';
 import { BASE_URL, PageLimit } from '@constant';
 import { getThisMonthDates } from '@lib/time';
 import ExpenseDaily from '@components/charts/ExpenseDaily';
@@ -42,8 +42,6 @@ function CollapseButton(props: {
 function InfoCards(props: { info: BasicInfo }) {
   /**
    * Normalize the snake case field to capitalized word
-   * @param field
-   * @returns
    */
   function normalize(field: string) {
     const str = field.replaceAll('_', ' ');
@@ -84,6 +82,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     category: null,
     offset: 0,
   });
+  const [tranTableTitle, setTranTableTitle] = useState('');
 
   const basicData = props.analysisData.basic;
   const dailyData = props.analysisData.daily;
@@ -122,7 +121,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   }
 
   // Client-fetching the transactions of the given category of this month
-  const { data: transactionData } = useSWR(
+  const { data, isValidating } = useSWR(
     fetchKey.category ? fetchKey : null,
     transactionFetcher,
     {
@@ -131,7 +130,15 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     },
   );
 
-  const tableOpen = fetchKey.category !== null && Boolean(transactionData);
+  const tableOpen = fetchKey.category !== null && Boolean(data);
+
+  useEffect(() => {
+    if (!isValidating && Boolean(data)) {
+      const display = (fetchKey.category ?? '').toLocaleLowerCase();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTranTableTitle(`List of ${display} transactions`);
+    }
+  }, [isValidating, data, fetchKey.category]);
 
   function handlePageChange(
     event: MouseEvent<HTMLButtonElement> | null,
@@ -171,20 +178,18 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
         <Collapse className="mt-8" in={tableOpen} timeout="auto" unmountOnExit>
           <div data-cy="category-tran-table">
             <TransactionTable
-              title={
-                fetchKey.category
-                  ? `List of ${fetchKey.category.toLocaleLowerCase()} transactions`
-                  : undefined
-              }
+              title={tranTableTitle}
               highlightBorder
-              paginatedTransactions={transactionData!}
+              paginatedTransactions={data!}
               onPageChange={handlePageChange}
             />
           </div>
           <CollapseButton
             className="mt-2 flex flex-row justify-center"
             onClick={() => {
-              setFetchKey((prev) => ({ ...prev, category: null, offset: 0 }));
+              if (fetchKey.category !== null) {
+                setFetchKey((prev) => ({ ...prev, category: null, offset: 0 }));
+              }
             }}
           />
         </Collapse>
