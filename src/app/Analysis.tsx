@@ -83,6 +83,10 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     offset: 0,
   });
   const [tranTableTitle, setTranTableTitle] = useState('');
+  // For communication between back to latest button and the chart
+  const [deselectSignal, setDeselectSignal] = useState<'DESELECT' | undefined>(
+    undefined,
+  );
 
   const basicData = props.analysisData.basic;
   const dailyData = props.analysisData.daily;
@@ -149,6 +153,16 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     setFetchKey((prev) => ({ ...prev, offset: newOffset }));
   }
 
+  function handleDeselect() {
+    if (fetchKey.category !== null) {
+      setFetchKey((prevKey) => ({
+        ...prevKey,
+        category: null,
+        offset: 0,
+      }));
+    }
+  }
+
   return (
     <>
       {/* Spending analysis */}
@@ -165,12 +179,15 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
           <ExpenseChange percentages={changeData} />
           <ExpenseComposition
             percentages={compositionData}
-            onChangeCategory={(category) => {
+            deselectSignal={deselectSignal}
+            onSelectCategory={(category) => {
               if (category !== fetchKey.category) {
                 // Moves back to first page when changing category
-                setFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+                setFetchKey((prevKey) => ({ ...prevKey, category, offset: 0 }));
               }
             }}
+            onDeselect={handleDeselect}
+            onResetSignal={() => setDeselectSignal(undefined)}
           />
         </Stack>
 
@@ -187,9 +204,8 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
           <CollapseButton
             className="mt-2 flex flex-row justify-center"
             onClick={() => {
-              if (fetchKey.category !== null) {
-                setFetchKey((prev) => ({ ...prev, category: null, offset: 0 }));
-              }
+              handleDeselect();
+              setDeselectSignal('DESELECT');
             }}
           />
         </Collapse>

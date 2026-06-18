@@ -71,6 +71,10 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     offset: 0,
   });
   const [tranTableTitle, setTranTableTitle] = useState('');
+  // For communication between back to latest button and the chart
+  const [deselectSignal, setDeselectSignal] = useState<'DESELECT' | undefined>(
+    undefined,
+  );
   const openBanner = useBanner();
 
   /**
@@ -212,6 +216,17 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     setTranFetchKey((prev) => ({ ...prev, offset: newOffset }));
   }
 
+  function handleBackToLatest() {
+    if (tranFetchKey.category !== null) {
+      // Move to first page when going back to latest
+      setTranFetchKey((prev) => ({
+        ...prev,
+        category: null,
+        offset: 0,
+      }));
+    }
+  }
+
   async function handleSubmitUpdateForm(data: CreateAccountBody) {
     // Convert to update body
     const updateData = {
@@ -292,12 +307,15 @@ export default function DetailedFinancialCard(props: { account: Account }) {
           <ExpenseChange percentages={changeData!} />
           <ExpenseComposition
             percentages={compositionData!}
-            onChangeCategory={(category) => {
+            deselectSignal={deselectSignal}
+            onSelectCategory={(category) => {
               if (category !== tranFetchKey.category) {
                 // Move to first page when changing category
                 setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
               }
             }}
+            onDeselect={handleBackToLatest}
+            onResetSignal={() => setDeselectSignal(undefined)}
           />
         </Stack>
         <TransactionTable
@@ -311,14 +329,8 @@ export default function DetailedFinancialCard(props: { account: Account }) {
             title="Go back to list of latest transactions"
             label="Back to latest"
             onClick={() => {
-              if (tranFetchKey.category !== null) {
-                // Move to first page when going back to latest
-                setTranFetchKey((prev) => ({
-                  ...prev,
-                  category: null,
-                  offset: 0,
-                }));
-              }
+              handleBackToLatest();
+              setDeselectSignal('DESELECT');
             }}
           />
         </Stack>

@@ -4,24 +4,26 @@ import { CategoryInfo } from '@interface';
 import { Box } from '@mui/material';
 import { Chart as ChartJS } from 'chart.js';
 import { Pie, getElementAtEvent } from 'react-chartjs-2';
-import { MouseEvent, useEffect, useRef } from 'react';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
 
 export default function ExpenseComposition(props: {
   periodType?: string;
   percentages: CategoryInfo;
-  onChangeCategory: (category: string) => void;
+  deselectSignal: 'DESELECT' | undefined;
+  onSelectCategory: (category: string) => void;
+  onDeselect: () => void;
+  onResetSignal: () => void;
 }) {
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const chartRef = useRef<ChartJS<'pie'> | null>(null);
 
   useEffect(() => {
-    // Expose chart instance for Cypress E2E.
-    // Avoid relying on global registry or DOM parsing.
-    // Still really flaky and doesn't handle the test cases really well
-    if (window.Cypress) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).__expenseCompositionChart = chartRef.current;
+    if (props.deselectSignal === 'DESELECT') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedIndex(-1);
+      props.onResetSignal();
     }
-  }, []);
+  }, [props, props.deselectSignal]);
 
   const options = {
     responsive: true,
@@ -29,7 +31,7 @@ export default function ExpenseComposition(props: {
     plugins: {
       title: {
         display: true,
-        text: [`Composition percentage this ${props.periodType ?? 'month'}`],
+        text: `Composition percentage this ${props.periodType ?? 'month'}`,
         font: {
           size: 20,
           weight: 'bold' as const,
@@ -45,7 +47,7 @@ export default function ExpenseComposition(props: {
     percentages.push(value);
   });
 
-  const backgroundColors = [
+  const mainColors = [
     '#FF6384',
     '#36A2EB',
     '#FFCE56',
@@ -56,6 +58,9 @@ export default function ExpenseComposition(props: {
     '#7DA2EB',
     '#3764BA',
   ];
+  const backgroundColors = mainColors.map((mainColor, index) => {
+    return index === selectedIndex ? '#332f27' : mainColor;
+  });
 
   const data = {
     labels: labels,
@@ -66,17 +71,27 @@ export default function ExpenseComposition(props: {
         backgroundColor: backgroundColors,
         borderColor: 'white',
         borderWidth: 1,
+        // Hover properties
+        hoverOffset: 10,
+        hoverBackgroundColor: '#332f27',
+        hoverBorderWidth: 2,
       },
     ],
   };
 
   function handleClick(event: MouseEvent<HTMLCanvasElement>) {
     if (chartRef.current) {
-      const elements = getElementAtEvent(chartRef.current, event);
-      if (elements.length) {
-        const { index } = elements[0];
-        const category = data.labels[index];
-        props.onChangeCategory(category);
+      const newSlice = getElementAtEvent(chartRef.current, event);
+      if (newSlice.length) {
+        const { index: newIndex } = newSlice[0];
+        if (newIndex !== selectedIndex) {
+          setSelectedIndex(newIndex);
+          const category = data.labels[newIndex];
+          props.onSelectCategory(category);
+        } else {
+          setSelectedIndex(-1);
+          props.onDeselect();
+        }
       }
     }
   }

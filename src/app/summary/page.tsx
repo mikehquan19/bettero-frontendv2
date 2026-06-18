@@ -43,6 +43,10 @@ export default function Summary() {
     offset: 0,
   });
   const [tranTableTitle, setTranTableTitle] = useState('');
+  // For communication between back to latest button and the chart
+  const [deselectSignal, setDeselectSignal] = useState<'DESELECT' | undefined>(
+    undefined,
+  );
 
   // Recalculate the list of periods only when selectedType changes
   const selectedTypePeriods = useMemo(() => {
@@ -134,6 +138,16 @@ export default function Summary() {
   ) {
     const newOffset = page * PageLimit;
     setTranFetchKey((prev) => ({ ...prev, offset: newOffset }));
+  }
+
+  function handleBackToLatest() {
+    if (tranFetchKey.category !== null) {
+      setTranFetchKey((prev) => ({
+        ...prev,
+        category: null,
+        offset: 0,
+      }));
+    }
   }
 
   /**
@@ -331,11 +345,14 @@ export default function Summary() {
             <ExpenseComposition
               periodType={tranFetchKey.selectedType.toLocaleLowerCase()}
               percentages={compositionData!}
-              onChangeCategory={(category) => {
+              deselectSignal={deselectSignal}
+              onSelectCategory={(category) => {
                 if (category !== tranFetchKey.category) {
                   setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
                 }
               }}
+              onDeselect={handleBackToLatest}
+              onResetSignal={() => setDeselectSignal(undefined)}
             />
           </Stack>
         </Stack>
@@ -352,13 +369,8 @@ export default function Summary() {
           className="bg-gray-400 font-bold rounded-lg flex"
           variant="contained"
           onClick={() => {
-            if (tranFetchKey.category !== null) {
-              setTranFetchKey((prev) => ({
-                ...prev,
-                category: null,
-                offset: 0,
-              }));
-            }
+            handleBackToLatest();
+            setDeselectSignal('DESELECT');
           }}
         >
           Back To Latest
