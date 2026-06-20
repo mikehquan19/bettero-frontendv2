@@ -1,11 +1,8 @@
-export function getThisMonthDates() {
-  const date = new Date();
-  const firstDate = new Date(date.getFullYear(), date.getMonth(), 1)
-    .toISOString()
-    .split('T')[0];
-  const lastDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-    .toISOString()
-    .split('T')[0];
+import dayjs from 'dayjs';
 
-  return [firstDate, lastDate];
+export function getThisMonthDates() {
+  return [
+    dayjs().startOf('month').format('YYYY-MM-DD'),
+    dayjs().endOf('month').format('YYYY-MM-DD'),
+  ];
 }

@@ -21,7 +21,7 @@ import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
 import ExpenseDaily from '@components/charts/ExpenseDaily';
 import TransactionTable from '@components/transactions/TransactionTable';
-import { useState, MouseEvent } from 'react';
+import { useState, MouseEvent, useEffect } from 'react';
 import { useBanner } from '@components/snackbar/BannerProvider';
 import useSWR from 'swr';
 import AccountDelete from '@components/financial-card/AccountDelete';
@@ -51,7 +51,7 @@ function OptionButton(props: {
   );
 }
 
-type accTranFetchKey = {
+type AccTranFetchKey = {
   accountId: number;
   category: string | null;
   offset: number;
@@ -65,17 +65,22 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   const [updateFormOpen, setUpdateFormOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
-  const [tranFetchKey, setTranFetchKey] = useState<accTranFetchKey>({
+  const [tranFetchKey, setTranFetchKey] = useState<AccTranFetchKey>({
     accountId: props.account.id,
     category: null,
     offset: 0,
   });
+  const [tranTableTitle, setTranTableTitle] = useState('');
+  // For communication between back to latest button and the chart
+  const [deselectSignal, setDeselectSignal] = useState<'DESELECT' | undefined>(
+    undefined,
+  );
   const openBanner = useBanner();
 
   /**
    * Fetch the analysis for this account on demand, when the user clicks the "Details" button
    */
-  async function analysisFetcher(
+  async function fetchAccountAnalysis(
     accountId: number,
   ): Promise<AccountAnalysisInfo> {
     const [firstDate, lastDate] = getThisMonthDates();
@@ -93,15 +98,15 @@ export default function DetailedFinancialCard(props: { account: Account }) {
 
     return {
       accountId: accountId,
-      daily: resData.data.daily,
-      change: resData.data.change,
-      composition: resData.data.composition,
+      daily: resData.data.daily ?? {},
+      change: resData.data.change ?? {},
+      composition: resData.data.composition ?? {},
     } as AccountAnalysisInfo;
   }
 
   const { data: analysisData } = useSWR(
     analysisOpen ? props.account.id.toString() : null,
-    analysisFetcher,
+    fetchAccountAnalysis,
     {
       revalidateOnFocus: false,
       keepPreviousData: true, // To keep previous data while closing the details
@@ -115,8 +120,8 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   /**
    * Fetch the transactions for this account on demand
    */
-  async function transactionsFetcher(
-    key: accTranFetchKey,
+  async function fetchAccountTransactions(
+    key: AccTranFetchKey,
   ): Promise<PaginatedData<Transaction[]>> {
     const [firstDate, lastDate] = getThisMonthDates();
 
@@ -146,20 +151,32 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   }
 
   // Fetch transactions data
-  const { data: transactionsData } = useSWR(
-    analysisOpen ? tranFetchKey : null,
-    transactionsFetcher,
-    {
+  const { data: transactionsData, isValidating: isTransactionsValidating } =
+    useSWR(analysisOpen ? tranFetchKey : null, fetchAccountTransactions, {
       revalidateOnFocus: false, // To avoid revalidating data when going back to the component
       keepPreviousData: true, // To keep previous data while changing category or page
-    },
-  );
+    });
 
   // Open details only when analysis and transactions have been loaded initially
   // If details is already open, keepPreviousData will ensure the data is still there while changing category or page,
   // so we don't need to check for loading state after the initial load.
   const present =
     analysisOpen && Boolean(analysisData) && Boolean(transactionsData);
+
+  useEffect(() => {
+    if (!isTransactionsValidating && Boolean(transactionsData)) {
+      const categoryDisplay = (tranFetchKey.category ?? '').toLocaleLowerCase();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTranTableTitle(
+        `List of ${props.account.acc_name}'s ${categoryDisplay} transactions`,
+      );
+    }
+  }, [
+    isTransactionsValidating,
+    transactionsData,
+    props.account.acc_name,
+    tranFetchKey.category,
+  ]);
 
   /**
    * Convert account to CreateAccountBody for pre-filling the update form
@@ -197,6 +214,17 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   ) {
     const newOffset = page * PageLimit;
     setTranFetchKey((prev) => ({ ...prev, offset: newOffset }));
+  }
+
+  function handleBackToLatest() {
+    if (tranFetchKey.category !== null) {
+      // Move to first page when going back to latest
+      setTranFetchKey((prev) => ({
+        ...prev,
+        category: null,
+        offset: 0,
+      }));
+    }
   }
 
   async function handleSubmitUpdateForm(data: CreateAccountBody) {
@@ -279,18 +307,19 @@ export default function DetailedFinancialCard(props: { account: Account }) {
           <ExpenseChange percentages={changeData!} />
           <ExpenseComposition
             percentages={compositionData!}
-            onChangeCategory={(category) => {
-              // Move to first page when changing category
-              setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+            deselectSignal={deselectSignal}
+            onSelectCategory={(category) => {
+              if (category !== tranFetchKey.category) {
+                // Move to first page when changing category
+                setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
+              }
             }}
+            onDeselect={handleBackToLatest}
+            onResetSignal={() => setDeselectSignal(undefined)}
           />
         </Stack>
         <TransactionTable
-          title={
-            tranFetchKey.category
-              ? `List of ${props.account.acc_name}'s ${tranFetchKey.category.toLocaleLowerCase()} transactions`
-              : `List of ${props.account.acc_name}'s transactions`
-          }
+          title={tranTableTitle}
           highlightBorder
           paginatedTransactions={transactionsData!}
           onPageChange={handlePageChange}
@@ -300,12 +329,8 @@ export default function DetailedFinancialCard(props: { account: Account }) {
             title="Go back to list of latest transactions"
             label="Back to latest"
             onClick={() => {
-              // Move to first page when going back to latest
-              setTranFetchKey((prev) => ({
-                ...prev,
-                category: null,
-                offset: 0,
-              }));
+              handleBackToLatest();
+              setDeselectSignal('DESELECT');
             }}
           />
         </Stack>
