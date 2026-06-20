@@ -15,7 +15,10 @@ import {
 } from '@mui/material';
 import { useState, MouseEvent, useMemo, useEffect } from 'react';
 import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
 import useSWR from 'swr';
+
+dayjs.extend(isoWeek);
 
 type Period = {
   startDate: string;
@@ -56,10 +59,10 @@ export default function Summary() {
         case 'MONTH':
           return [dayjs().startOf('month'), dayjs().endOf('month')];
         case 'BIWEEK':
-          const end = dayjs().endOf('week');
+          const end = dayjs().endOf('isoWeek');
           return [end.subtract(13, 'day'), end];
         case 'WEEK':
-          return [dayjs().startOf('week'), dayjs().endOf('week')];
+          return [dayjs().startOf('isoWeek'), dayjs().endOf('isoWeek')];
       }
     }
 
@@ -77,7 +80,7 @@ export default function Summary() {
           return [period[0].subtract(14, 'day'), period[1].subtract(14, 'day')];
         case 'WEEK':
           start = period[0].subtract(1, 'week');
-          return [start, start.endOf('week')];
+          return [start, start.endOf('isoWeek')];
       }
     }
 
@@ -241,21 +244,18 @@ export default function Summary() {
   const changeData = analysisData?.change;
   const compositionData = analysisData?.composition;
 
-  const { data: transactionsData, isValidating } = useSWR(
-    tranFetchKey,
-    fetchPeriodTransactions,
-    {
+  const { data: transactionsData, isValidating: isTransactionsValidating } =
+    useSWR(tranFetchKey, fetchPeriodTransactions, {
       keepPreviousData: true,
       dedupingInterval: 0,
       revalidateIfStale: false,
       revalidateOnFocus: false,
-    },
-  );
+    });
 
   // The title uses the state of the transaction fetch key, which should be
   // consistent with the fetching behavior
   useEffect(() => {
-    if (!isValidating && Boolean(transactionsData)) {
+    if (!isTransactionsValidating && Boolean(transactionsData)) {
       // Pick the first one from the list of periods if the selectedTypePeriods is not defined
       const startDate = tranFetchKey.selectedPeriod
         ? tranFetchKey.selectedPeriod.startDate
@@ -272,7 +272,7 @@ export default function Summary() {
       );
     }
   }, [
-    isValidating,
+    isTransactionsValidating,
     transactionsData,
     tranFetchKey.selectedPeriod,
     selectedTypePeriods,

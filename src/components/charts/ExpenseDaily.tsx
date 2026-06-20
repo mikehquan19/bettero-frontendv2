@@ -46,7 +46,6 @@ export default function ExpenseDaily(props: {
         data: values,
         borderColor: '#4B5563',
         backgroundColor: '#4B5563',
-        fill: true,
         pointHoverRadius: 8,
       },
     ],
