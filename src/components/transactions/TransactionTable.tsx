@@ -102,7 +102,6 @@ type Suggestion = {
 
 function TransactionSearchBar() {
   const [keyword, setKeyword] = useState<string>('');
-
   const { searchTransactions } = useTransactionActions();
 
   // Fetcher function to get list of sugestions
@@ -130,7 +129,7 @@ function TransactionSearchBar() {
     fetchSuggestions,
     { keepPreviousData: true },
   );
-  const descriptions: Suggestion[] =
+  const suggestions: Suggestion[] =
     keyword.length > 0 ? (suggestionsData ?? []) : [];
 
   return (
@@ -139,7 +138,7 @@ function TransactionSearchBar() {
         size="small"
         freeSolo
         autoHighlight
-        options={descriptions}
+        options={suggestions}
         inputValue={keyword} // Control the keyword
         slotProps={{
           paper: {
@@ -229,12 +228,12 @@ function TransactionSearchBar() {
           onClick={() => {
             // If the current keyword has the list of suggestions,
             // search for first one on click
-            if (descriptions.length > 0) {
-              setKeyword(descriptions[0].name);
+            if (suggestions.length > 0) {
+              setKeyword(suggestions[0].name);
               if (searchTransactions) {
                 searchTransactions(
-                  descriptions[0].type as 'merchant' | 'description',
-                  descriptions[0].name,
+                  suggestions[0].type as 'merchant' | 'description',
+                  suggestions[0].name,
                 );
               }
             }

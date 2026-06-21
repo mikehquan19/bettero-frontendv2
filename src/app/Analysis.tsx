@@ -136,14 +136,13 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   );
 
   const tableOpen = fetchKey.category !== null;
-  const tableLoading =
-    fetchKey.category !== null && isLoading && !Boolean(data);
+  const tableLoading = tableOpen && isLoading && !Boolean(data);
 
   useEffect(() => {
     if (!isValidating && Boolean(data)) {
-      const display = (fetchKey.category ?? '').toLocaleLowerCase();
+      const categoryDisplay = (fetchKey.category ?? '').toLocaleLowerCase();
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTranTableTitle(`List of ${display} transactions`);
+      setTranTableTitle(`List of ${categoryDisplay} transactions`);
     }
   }, [isValidating, data, fetchKey.category]);
 
@@ -171,7 +170,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
       {/* Spending analysis */}
       <Typography
         variant="h6"
-        className="bg-gray-400 font-bold p-2 rounded-t-xl text-white"
+        className="bg-blue-900 font-bold p-2 rounded-t-xl text-white"
       >
         Spending analysis this month
       </Typography>
