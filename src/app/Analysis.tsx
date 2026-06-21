@@ -136,7 +136,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   );
 
   const tableOpen = fetchKey.category !== null;
-  const tableLoading = tableOpen && ((isLoading && !Boolean(data)));
+  const tableLoading = tableOpen && isLoading && !Boolean(data);
 
   useEffect(() => {
     if (!isValidating && Boolean(data)) {
