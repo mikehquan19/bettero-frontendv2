@@ -59,7 +59,7 @@ function InfoCards(props: { info: BasicInfo }) {
       ].map((field) => (
         <div
           key={field}
-          className="bg-blue-400 rounded-xl shadow-md flex flex-col justify-between h-24 p-3"
+          className="bg-blue-700 text-white rounded-xl shadow-md flex flex-col justify-between h-24 p-3"
         >
           <Typography className="self-start text-lg">
             {normalize(field)}
@@ -136,7 +136,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   );
 
   const tableOpen = fetchKey.category !== null;
-  const tableLoading = tableOpen && isLoading && !Boolean(data);
+  const tableLoading = tableOpen && ((isLoading && !Boolean(data)));
 
   useEffect(() => {
     if (!isValidating && Boolean(data)) {

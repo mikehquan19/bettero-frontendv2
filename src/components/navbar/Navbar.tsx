@@ -30,8 +30,8 @@ export default function Navbar() {
             className={`justify-center rounded-lg font-${
               pathname === item.href ? 'bold' : 'normal'
             } bg-${
-              pathname === item.href ? 'blue-400' : 'transparent'
-            } text-white hover:bg-blue-400`}
+              pathname === item.href ? 'blue-700' : 'transparent'
+            } text-white hover:bg-blue-700`}
           >
             {item.name}
           </Button>

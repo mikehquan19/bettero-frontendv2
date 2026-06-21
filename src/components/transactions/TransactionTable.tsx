@@ -223,7 +223,7 @@ function TransactionSearchBar() {
         <Button
           data-cy="tran-search-btn"
           disableElevation
-          className="rounded-r-lg rounded-l-none"
+          className="rounded-r-lg rounded-l-none bg-blue-700"
           variant="contained"
           onClick={() => {
             // If the current keyword has the list of suggestions,

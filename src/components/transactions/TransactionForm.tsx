@@ -94,7 +94,7 @@ export default function TransactionForm(props: TransactionFormProps) {
       onClose={props.onClose}
       slotProps={{
         paper: {
-          className: 'bg-blue-200 p-4 rounded-xl shadow-lg',
+          className: 'bg-blue-300 p-4 rounded-xl shadow-lg',
         },
       }}
     >
