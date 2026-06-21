@@ -21,10 +21,12 @@ import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
 import ExpenseDaily from '@components/charts/ExpenseDaily';
 import TransactionTable from '@components/transactions/TransactionTable';
+import { LoadingTransactionTable } from '@components/transactions/TransactionTable';
 import { useState, MouseEvent, useEffect } from 'react';
 import { useBanner } from '@components/snackbar/BannerProvider';
 import useSWR from 'swr';
 import AccountDelete from '@components/financial-card/AccountDelete';
+import LoadingChartPanel from '@components/charts/LoadingChart';
 
 /**
  * Option button for the detailed financial card
@@ -104,7 +106,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     } as AccountAnalysisInfo;
   }
 
-  const { data: analysisData } = useSWR(
+  const { data: analysisData, isLoading: isAnalysisLoading } = useSWR(
     analysisOpen ? props.account.id.toString() : null,
     fetchAccountAnalysis,
     {
@@ -112,7 +114,8 @@ export default function DetailedFinancialCard(props: { account: Account }) {
       keepPreviousData: true, // To keep previous data while closing the details
     },
   );
-
+  const chartsLoading =
+    analysisOpen && isAnalysisLoading && !Boolean(analysisData);
   const dailyData = analysisData?.daily;
   const changeData = analysisData?.change;
   const compositionData = analysisData?.composition;
@@ -151,17 +154,20 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   }
 
   // Fetch transactions data
-  const { data: transactionsData, isValidating: isTransactionsValidating } =
-    useSWR(analysisOpen ? tranFetchKey : null, fetchAccountTransactions, {
-      revalidateOnFocus: false, // To avoid revalidating data when going back to the component
-      keepPreviousData: true, // To keep previous data while changing category or page
-    });
+  const {
+    data: transactionsData,
+    isLoading: isTransactionLoading,
+    isValidating: isTransactionsValidating,
+  } = useSWR(analysisOpen ? tranFetchKey : null, fetchAccountTransactions, {
+    revalidateOnFocus: false, // To avoid revalidating data when going back to the component
+    keepPreviousData: true, // To keep previous data while changing category or page
+  });
 
   // Open details only when analysis and transactions have been loaded initially
   // If details is already open, keepPreviousData will ensure the data is still there while changing category or page,
   // so we don't need to check for loading state after the initial load.
-  const present =
-    analysisOpen && Boolean(analysisData) && Boolean(transactionsData);
+  const tableLoading =
+    analysisOpen && isTransactionLoading && !Boolean(transactionsData);
 
   useEffect(() => {
     if (!isTransactionsValidating && Boolean(transactionsData)) {
@@ -301,29 +307,48 @@ export default function DetailedFinancialCard(props: { account: Account }) {
         />
       </Stack>
       {/* Details panel */}
-      <Collapse className="mt-8 p-4" in={present} timeout="auto" unmountOnExit>
-        <ExpenseDaily dailyExpenses={dailyData!} />
-        <Stack direction="row" className="justify-evenly my-8">
-          <ExpenseChange percentages={changeData!} />
-          <ExpenseComposition
-            percentages={compositionData!}
-            deselectSignal={deselectSignal}
-            onSelectCategory={(category) => {
-              if (category !== tranFetchKey.category) {
-                // Move to first page when changing category
-                setTranFetchKey((prev) => ({ ...prev, category, offset: 0 }));
-              }
-            }}
-            onDeselect={handleBackToLatest}
-            onResetSignal={() => setDeselectSignal(undefined)}
+      <Collapse
+        className="mt-8 p-4"
+        in={analysisOpen}
+        timeout="auto"
+        unmountOnExit
+      >
+        {chartsLoading ? (
+          <LoadingChartPanel />
+        ) : (
+          <>
+            <ExpenseDaily dailyExpenses={dailyData!} />
+            <Stack direction="row" className="justify-evenly my-8">
+              <ExpenseChange percentages={changeData!} />
+              <ExpenseComposition
+                percentages={compositionData!}
+                deselectSignal={deselectSignal}
+                onSelectCategory={(category) => {
+                  if (category !== tranFetchKey.category) {
+                    // Move to first page when changing category
+                    setTranFetchKey((prev) => ({
+                      ...prev,
+                      category,
+                      offset: 0,
+                    }));
+                  }
+                }}
+                onDeselect={handleBackToLatest}
+                onResetSignal={() => setDeselectSignal(undefined)}
+              />
+            </Stack>
+          </>
+        )}
+        {tableLoading ? (
+          <LoadingTransactionTable />
+        ) : (
+          <TransactionTable
+            title={tranTableTitle}
+            highlightBorder
+            paginatedTransactions={transactionsData!}
+            onPageChange={handlePageChange}
           />
-        </Stack>
-        <TransactionTable
-          title={tranTableTitle}
-          highlightBorder
-          paginatedTransactions={transactionsData!}
-          onPageChange={handlePageChange}
-        />
+        )}
         <Stack direction="row" className="justify-center mt-4">
           <OptionButton
             title="Go back to list of latest transactions"

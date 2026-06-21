@@ -3,7 +3,10 @@
 import ExpenseDaily from '@components/charts/ExpenseDaily';
 import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
-import TransactionTable from '@components/transactions/TransactionTable';
+import TransactionTable, {
+  LoadingTransactionTable,
+} from '@components/transactions/TransactionTable';
+import LoadingChartPanel from '@components/charts/LoadingChart';
 import { AnalysisInfo, PaginatedData, Transaction } from '@interface';
 import { BASE_URL, PageLimit } from '@constant';
 import {
@@ -226,8 +229,7 @@ export default function Summary() {
     } as PaginatedData<Transaction[]>;
   }
 
-  // TODO: When things are going well, we will start caching
-  const { data: analysisData } = useSWR(
+  const { data: analysisData, isLoading: isAnalysisLoading } = useSWR(
     {
       type: tranFetchKey.selectedType,
       period: tranFetchKey.selectedPeriod ?? selectedTypePeriods[0],
@@ -236,21 +238,23 @@ export default function Summary() {
     {
       keepPreviousData: true,
       dedupingInterval: 0, // Disables the short-term memory cache
-      revalidateIfStale: false, // Stops re-fetching when using stale cache
       revalidateOnFocus: false, // Stops refetching when window is focused
     },
   );
+  const chartsLoading = isAnalysisLoading && !Boolean(analysisData);
   const dailyData = analysisData?.daily;
   const changeData = analysisData?.change;
   const compositionData = analysisData?.composition;
 
-  const { data: transactionsData, isValidating: isTransactionsValidating } =
-    useSWR(tranFetchKey, fetchPeriodTransactions, {
-      keepPreviousData: true,
-      dedupingInterval: 0,
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-    });
+  const {
+    data: transactionsData,
+    isLoading: isTransactionLoading,
+    isValidating: isTransactionsValidating,
+  } = useSWR(tranFetchKey, fetchPeriodTransactions, {
+    keepPreviousData: true,
+    revalidateOnFocus: false,
+  });
+  const tableLoading = isTransactionLoading && !Boolean(transactionsData);
 
   // The title uses the state of the transaction fetch key, which should be
   // consistent with the fetching behavior
@@ -328,7 +332,9 @@ export default function Summary() {
       {/* 
         analysisData & transactionsData fetching is separate since they are separately rendered
       */}
-      {Boolean(analysisData) && (
+      {chartsLoading ? (
+        <LoadingChartPanel />
+      ) : (
         <Stack
           spacing={6}
           className="my-4 bg-blue-300 rounded-xl shadow-lg p-4"
@@ -357,7 +363,9 @@ export default function Summary() {
           </Stack>
         </Stack>
       )}
-      {Boolean(transactionsData) && (
+      {tableLoading ? (
+        <LoadingTransactionTable />
+      ) : (
         <TransactionTable
           title={tranTableTitle}
           paginatedTransactions={transactionsData!}
