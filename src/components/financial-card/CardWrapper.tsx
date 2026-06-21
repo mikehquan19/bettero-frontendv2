@@ -25,7 +25,7 @@ export default function CardWrapper(props: {
       <Box className="rounded-xl shadow-lg bg-blue-300">
         <Stack
           direction="row"
-          className="bg-gray-400 text-white rounded-t-xl justify-between items-center p-2"
+          className="bg-blue-900 text-white rounded-t-xl justify-between items-center p-2"
         >
           <Typography variant="h6" className="font-bold">
             List of {type} accounts ({props.numAccounts}):
@@ -43,7 +43,7 @@ export default function CardWrapper(props: {
           <Stack
             direction="row"
             spacing={2}
-            className="py-3 px-2 overflow-x-auto"
+            className="py-3 px-2 overflow-x-auto scrollbar-hide"
           >
             {props.children}
           </Stack>

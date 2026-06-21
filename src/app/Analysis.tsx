@@ -4,6 +4,7 @@ import { Typography, Stack, Collapse, Button, Tooltip } from '@mui/material';
 import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
 import TransactionTable from '@components/transactions/TransactionTable';
+import { LoadingTransactionTable } from '@components/transactions/TransactionTable';
 import {
   AnalysisInfo,
   BasicInfo,
@@ -58,13 +59,13 @@ function InfoCards(props: { info: BasicInfo }) {
       ].map((field) => (
         <div
           key={field}
-          className="bg-blue-400 rounded-xl shadow-md flex flex-col justify-between h-24 p-3"
+          className="bg-blue-700 text-white rounded-xl shadow-md flex flex-col justify-between h-24 p-3"
         >
           <Typography className="self-start text-lg">
             {normalize(field)}
           </Typography>
           <Typography variant="h5" className="self-end font-bold">
-            {props.info[field as keyof BasicInfo]}
+            ${props.info[field as keyof BasicInfo]}
           </Typography>
         </div>
       ))}
@@ -96,7 +97,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   /**
    * Fetcher for client-fetching using useSWR
    */
-  async function transactionFetcher(
+  async function fetchTransactions(
     key: transactionFetchKey,
   ): Promise<PaginatedData<Transaction[]>> {
     const [firstDate, lastDate] = getThisMonthDates();
@@ -125,22 +126,23 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
   }
 
   // Client-fetching the transactions of the given category of this month
-  const { data, isValidating } = useSWR(
+  const { data, isLoading, isValidating } = useSWR(
     fetchKey.category ? fetchKey : null,
-    transactionFetcher,
+    fetchTransactions,
     {
       revalidateOnFocus: false, // Disable revalidation on window focus
-      keepPreviousData: true, // To keep previous data while loading new one
+      keepPreviousData: true, // Keep previous category while fetching new one
     },
   );
 
-  const tableOpen = fetchKey.category !== null && Boolean(data);
+  const tableOpen = fetchKey.category !== null;
+  const tableLoading = tableOpen && isLoading && !Boolean(data);
 
   useEffect(() => {
     if (!isValidating && Boolean(data)) {
-      const display = (fetchKey.category ?? '').toLocaleLowerCase();
+      const categoryDisplay = (fetchKey.category ?? '').toLocaleLowerCase();
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTranTableTitle(`List of ${display} transactions`);
+      setTranTableTitle(`List of ${categoryDisplay} transactions`);
     }
   }, [isValidating, data, fetchKey.category]);
 
@@ -168,7 +170,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
       {/* Spending analysis */}
       <Typography
         variant="h6"
-        className="bg-gray-400 font-bold p-2 rounded-t-xl text-white"
+        className="bg-blue-900 font-bold p-2 rounded-t-xl text-white"
       >
         Spending analysis this month
       </Typography>
@@ -194,12 +196,16 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
         {/* Collapsible transaction table */}
         <Collapse className="mt-8" in={tableOpen} timeout="auto" unmountOnExit>
           <div data-cy="category-tran-table">
-            <TransactionTable
-              title={tranTableTitle}
-              highlightBorder
-              paginatedTransactions={data!}
-              onPageChange={handlePageChange}
-            />
+            {tableLoading ? (
+              <LoadingTransactionTable />
+            ) : (
+              <TransactionTable
+                title={tranTableTitle}
+                highlightBorder
+                paginatedTransactions={data!}
+                onPageChange={handlePageChange}
+              />
+            )}
           </div>
           <CollapseButton
             className="mt-2 flex flex-row justify-center"

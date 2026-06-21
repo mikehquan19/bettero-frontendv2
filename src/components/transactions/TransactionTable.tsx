@@ -1,5 +1,8 @@
 'use client';
 
+import { useTransactionActions } from './TransactionContainer';
+import { PaginatedData, Transaction, CreateTransactionBody } from '@interface';
+import { PageLimit, BASE_URL } from '@constant';
 import {
   Table,
   TableBody,
@@ -23,6 +26,7 @@ import {
   Button,
   Box,
   AutocompleteInputChangeReason,
+  Skeleton,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -30,11 +34,71 @@ import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SearchIcon from '@mui/icons-material/Search';
 import { MouseEvent, SyntheticEvent, useState } from 'react';
-import { PaginatedData, Transaction, CreateTransactionBody } from '@interface';
-import { PageLimit, BASE_URL } from '@constant';
-import { useTransactionActions } from './TransactionContainer';
 import useSWR from 'swr';
 import dayjs from 'dayjs';
+
+/**
+ * Skeleton of the transaction table when the website is fetching transactions data
+ */
+export function LoadingTransactionTable() {
+  const columns = [
+    'Account',
+    'Merchant',
+    'Description',
+    'Category',
+    'Amount',
+    'Created At',
+  ];
+  return (
+    <Paper className="bg-blue-300 rounded-xl">
+      <Stack
+        direction="row"
+        className="bg-blue-900 text-white rounded-t-xl p-3"
+      >
+        <Typography variant="h6" className="font-bold">
+          {/* Title is dynamic */}
+          <Skeleton
+            variant="text"
+            height={40}
+            width={350}
+            className="bg-blue-600"
+          />
+        </Typography>
+      </Stack>
+      <TableContainer>
+        <Table
+          sx={{
+            minWidth: 1000,
+            '& .MuiTableRow-root': {
+              borderTop: '0.1rem solid rgba(0,0,0,0.12)',
+            },
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              {columns.map((col) => (
+                <TableCell key={col}>
+                  <Typography className="font-bold">{col}</Typography>
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {Array.from({ length: 7 }).map((_, index) => (
+              <TableRow key={index}>
+                {columns.map((col) => (
+                  <TableCell key={col}>
+                    <Skeleton variant="text" width="80%" height={30} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
+}
 
 type Suggestion = {
   name: string;
@@ -43,50 +107,35 @@ type Suggestion = {
 
 function TransactionSearchBar() {
   const [keyword, setKeyword] = useState<string>('');
-
   const { searchTransactions } = useTransactionActions();
 
   // Fetcher function to get list of sugestions
   async function fetchSuggestions(keyword: string): Promise<Suggestion[]> {
-    try {
-      const res = await fetch(
-        `${BASE_URL}/transactions/autocomplete?q=${keyword}`,
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-          },
+    const res = await fetch(
+      `${BASE_URL}/transactions/autocomplete?q=${keyword}`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
         },
-      );
-      const resData = await res.json();
-      if (resData.error !== '') {
-        console.log(resData.error);
-        return [];
-      }
-
-      return resData.data ?? [];
-    } catch (error) {
-      console.log(
-        error instanceof Error ? error.message : 'An unknown error occurred',
-      );
+      },
+    );
+    const resData = await res.json();
+    if (resData.error !== '') {
+      console.log(resData.error);
       return [];
     }
+
+    return resData.data ?? [];
   }
 
-  const { data } = useSWR(
+  const { data: suggestionsData } = useSWR(
     keyword.length > 0 ? keyword : null,
     fetchSuggestions,
     { keepPreviousData: true },
   );
-
-  // Derive descriptions from the SWR result instead of setting state in an effect.
-  // This avoids synchronously calling setState inside an effect which can
-  // cause cascading renders.
-  const descriptions: Suggestion[] = keyword.length > 0 ? (data ?? []) : [];
-
-  function capitalize(str: string) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
+  const suggestions: Suggestion[] =
+    keyword.length > 0 ? (suggestionsData ?? []) : [];
 
   return (
     <div className="flex flex-row">
@@ -94,7 +143,7 @@ function TransactionSearchBar() {
         size="small"
         freeSolo
         autoHighlight
-        options={descriptions}
+        options={suggestions}
         inputValue={keyword} // Control the keyword
         slotProps={{
           paper: {
@@ -103,8 +152,7 @@ function TransactionSearchBar() {
         }}
         filterOptions={(options) => options} // If we don't do this, it will filter
         getOptionLabel={(option: string | Suggestion) => {
-          // The options should always be Suggestion instead of string
-          // MUI's type safety
+          // The options should always be Suggestion instead of string MUI's type safety
           if (typeof option === 'string') {
             return option;
           }
@@ -113,7 +161,9 @@ function TransactionSearchBar() {
         renderOption={(props, option: string | Suggestion) => {
           const { key, ...optionProps } = props;
           const optionType =
-            typeof option === 'string' ? null : capitalize(option.type);
+            typeof option === 'string'
+              ? null
+              : option.type.charAt(0).toUpperCase() + option.type.slice(1);
           return (
             // Render the suggestion along with its option field
             <Box key={key} component="li" {...optionProps}>
@@ -178,17 +228,17 @@ function TransactionSearchBar() {
         <Button
           data-cy="tran-search-btn"
           disableElevation
-          className="rounded-r-lg rounded-l-none"
+          className="rounded-r-lg rounded-l-none bg-blue-700"
           variant="contained"
           onClick={() => {
             // If the current keyword has the list of suggestions,
             // search for first one on click
-            if (descriptions.length > 0) {
-              setKeyword(descriptions[0].name);
+            if (suggestions.length > 0) {
+              setKeyword(suggestions[0].name);
               if (searchTransactions) {
                 searchTransactions(
-                  descriptions[0].type as 'merchant' | 'description',
-                  descriptions[0].name,
+                  suggestions[0].type as 'merchant' | 'description',
+                  suggestions[0].name,
                 );
               }
             }
@@ -250,7 +300,7 @@ function TransactionTableBodyMenu(props: TransactionMenuProps) {
           'aria-labelledby': props.controlButton,
         },
         paper: {
-          className: 'bg-blue-100',
+          className: 'bg-blue-300',
         },
       }}
     >
@@ -407,8 +457,7 @@ type TransactionTableProps = {
 
 /**
  * Table that only displays the list of paginated transactions.
- * It does not take the actions (create, update, delete a transaction),
- * but interacts with the context provider that do it.
+ * It does not take the actions but interacts with the context provider that do it.
  *
  * When used directly, interactions with context provider is not enabled.
  */
@@ -418,7 +467,6 @@ export default function TransactionTable(props: TransactionTableProps) {
   const currentPage = Math.floor(
     props.paginatedTransactions.offset / PageLimit,
   );
-
   const borderStyle = props.highlightBorder ? 'border-2 border-gray-400' : '';
 
   return (

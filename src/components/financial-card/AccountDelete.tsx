@@ -21,7 +21,7 @@ export default function AccountDelete(props: {
       onClose={props.onClose}
       slotProps={{
         paper: {
-          className: 'bg-blue-200 p-4 rounded-xl shadow-lg',
+          className: 'bg-blue-300 p-4 rounded-xl shadow-lg',
         },
       }}
     >
