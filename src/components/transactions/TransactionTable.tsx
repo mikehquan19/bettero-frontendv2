@@ -57,7 +57,7 @@ export function LoadingTransactionTable() {
       >
         <Typography variant="h6" className="font-bold">
           {/* Title is dynamic */}
-          <Skeleton variant="text" width={350} className="bg-gray-600" />
+          <Skeleton variant="text" height={40} width={350} className="bg-blue-600" />
         </Typography>
       </Stack>
       <TableContainer>

@@ -43,7 +43,7 @@ export default function CardWrapper(props: {
           <Stack
             direction="row"
             spacing={2}
-            className="py-3 px-2 overflow-x-auto"
+            className="py-3 px-2 overflow-x-auto scrollbar-hide"
           >
             {props.children}
           </Stack>

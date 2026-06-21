@@ -308,7 +308,7 @@ export default function Summary() {
       <Stack
         direction="row"
         spacing={1}
-        className="p-2 mt-8 rounded-xl shadow-xl overflow-x-auto"
+        className="p-2 mt-8 rounded-xl shadow-xl overflow-x-auto scrollbar-hide"
       >
         {selectedTypePeriods.map((period, idx) => (
           <Button
