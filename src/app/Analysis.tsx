@@ -131,6 +131,7 @@ export default function Analysis(props: { analysisData: AnalysisInfo }) {
     fetchTransactions,
     {
       revalidateOnFocus: false, // Disable revalidation on window focus
+      dedupingInterval: 0,
       keepPreviousData: true, // Keep previous category while fetching new one
     },
   );
