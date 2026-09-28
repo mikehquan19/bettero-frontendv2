@@ -8,11 +8,13 @@ import { BASE_URL } from '@constant';
  * Cache the result for an hour, except being revalidated
  */
 export async function fetchAnalysisInfo(
-  startDate: string,
-  endDate: string,
+  currStart: string,
+  currEnd: string,
+  prevStart: string,
+  prevEnd: string,
 ): Promise<AnalysisInfo> {
   const res = await fetch(
-    `${BASE_URL}/summary?start=${startDate}&end=${endDate}`,
+    `${BASE_URL}/summary?curr_start=${currStart}&curr_end=${currEnd}&prev_start=${prevStart}&prev_end=${prevEnd}`,
     {
       method: 'GET',
       next: {

@@ -15,7 +15,7 @@ import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import FinancialCard from '@components/financial-card/FinancialCard';
 import AccountForm from '@components/financial-card/AccountForm';
-import { getThisMonthDates } from '@lib/time';
+import { getLastMonthDates, getThisMonthDates } from '@lib/time';
 import { deleteAccount, updateAccount } from '@lib/fetchAccounts';
 import ExpenseChange from '@components/charts/ExpenseChange';
 import ExpenseComposition from '@components/charts/ExpenseComposition';
@@ -85,8 +85,9 @@ export default function DetailedFinancialCard(props: { account: Account }) {
   async function fetchAccountAnalysis(
     accountId: number,
   ): Promise<AccountAnalysisInfo> {
-    const [firstDate, lastDate] = getThisMonthDates();
-    const accSummaryUrl = `${BASE_URL}/accounts/${accountId}/summary?start=${firstDate}&end=${lastDate}`;
+    const [currStart, currEnd] = getThisMonthDates();
+    const [prevStart, prevEnd] = getLastMonthDates();
+    const accSummaryUrl = `${BASE_URL}/accounts/${accountId}/summary?curr_start=${currStart}&curr_end=${currEnd}&prev_start=${prevStart}&prev_end=${prevEnd}`;
     const res = await fetch(accSummaryUrl, {
       method: 'GET',
       headers: {
@@ -111,6 +112,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     fetchAccountAnalysis,
     {
       revalidateOnFocus: false,
+      dedupingInterval: 0,
       keepPreviousData: true, // To keep previous data while closing the details
     },
   );
@@ -160,6 +162,7 @@ export default function DetailedFinancialCard(props: { account: Account }) {
     isValidating: isTransactionsValidating,
   } = useSWR(analysisOpen ? tranFetchKey : null, fetchAccountTransactions, {
     revalidateOnFocus: false, // To avoid revalidating data when going back to the component
+    dedupingInterval: 0,
     keepPreviousData: true, // To keep previous data while changing category or page
   });
 

@@ -32,6 +32,41 @@ function periodEqual(a: Period, b: Period): boolean {
   return a.startDate === b.startDate && a.endDate === b.endDate;
 }
 
+/**
+ * Get the current month, biweek, and week
+ */
+function getCurrentPeriod(type: PeriodType): [dayjs.Dayjs, dayjs.Dayjs] {
+  switch (type) {
+    case 'MONTH':
+      return [dayjs().startOf('month'), dayjs().endOf('month')];
+    case 'BIWEEK':
+      const end = dayjs().endOf('isoWeek');
+      return [end.subtract(13, 'day'), end];
+    case 'WEEK':
+      return [dayjs().startOf('isoWeek'), dayjs().endOf('isoWeek')];
+  }
+}
+
+/**
+ * Get the previous period from the given period
+ */
+function getPreviousPeriod(
+  type: PeriodType,
+  period: [dayjs.Dayjs, dayjs.Dayjs],
+): [dayjs.Dayjs, dayjs.Dayjs] {
+  let start: dayjs.Dayjs;
+  switch (type) {
+    case 'MONTH':
+      start = period[0].subtract(1, 'month');
+      return [start, start.endOf('month')];
+    case 'BIWEEK':
+      return [period[0].subtract(14, 'day'), period[1].subtract(14, 'day')];
+    case 'WEEK':
+      start = period[0].subtract(1, 'week');
+      return [start, start.endOf('isoWeek')];
+  }
+}
+
 type PeriodType = 'MONTH' | 'BIWEEK' | 'WEEK';
 
 type PeriodTranFetchKey = {
@@ -56,37 +91,6 @@ export default function Summary() {
 
   // Recalculate the list of periods only when selectedType changes
   const selectedTypePeriods = useMemo(() => {
-    // Get the current month, biweek, and week
-    function getCurrentPeriod(type: PeriodType): [dayjs.Dayjs, dayjs.Dayjs] {
-      switch (type) {
-        case 'MONTH':
-          return [dayjs().startOf('month'), dayjs().endOf('month')];
-        case 'BIWEEK':
-          const end = dayjs().endOf('isoWeek');
-          return [end.subtract(13, 'day'), end];
-        case 'WEEK':
-          return [dayjs().startOf('isoWeek'), dayjs().endOf('isoWeek')];
-      }
-    }
-
-    // Get the previous period from the given period
-    function getPreviousPeriod(
-      type: PeriodType,
-      period: [dayjs.Dayjs, dayjs.Dayjs],
-    ): [dayjs.Dayjs, dayjs.Dayjs] {
-      let start: dayjs.Dayjs;
-      switch (type) {
-        case 'MONTH':
-          start = period[0].subtract(1, 'month');
-          return [start, start.endOf('month')];
-        case 'BIWEEK':
-          return [period[0].subtract(14, 'day'), period[1].subtract(14, 'day')];
-        case 'WEEK':
-          start = period[0].subtract(1, 'week');
-          return [start, start.endOf('isoWeek')];
-      }
-    }
-
     const _selectedTypePeriods: Period[] = [];
     let [start, end] = getCurrentPeriod(tranFetchKey.selectedType);
 
@@ -174,12 +178,21 @@ export default function Summary() {
   }
 
   async function fetchPeriodAnalysis(key: {
-    type: string;
+    type: PeriodType;
     period: Period;
   }): Promise<AnalysisInfo> {
-    const startDate = key.period.startDate;
-    const endDate = key.period.endDate;
-    const periodSummaryUrl = `${BASE_URL}/summary?interval_type=${key.type}&start=${startDate}&end=${endDate}`;
+    const currStart = key.period.startDate;
+    const currEnd = key.period.endDate;
+    const [prevStartDayjs, prevEndDayjs] = getPreviousPeriod(key.type, [
+      dayjs(currStart),
+      dayjs(currEnd),
+    ]);
+    const prevStart = prevStartDayjs.format('YYYY-MM-DD');
+    const prevEnd = prevEndDayjs.format('YYYY-MM-DD');
+    console.log(prevStart);
+    console.log(prevEnd);
+
+    const periodSummaryUrl = `${BASE_URL}/summary?curr_start=${currStart}&curr_end=${currEnd}&prev_start=${prevStart}&prev_end=${prevEnd}`;
     const res = await fetch(periodSummaryUrl, {
       method: 'GET',
       headers: {
@@ -252,6 +265,7 @@ export default function Summary() {
     isValidating: isTransactionsValidating,
   } = useSWR(tranFetchKey, fetchPeriodTransactions, {
     keepPreviousData: true,
+    dedupingInterval: 0,
     revalidateOnFocus: false,
   });
   const tableLoading = isTransactionLoading && !Boolean(transactionsData);
